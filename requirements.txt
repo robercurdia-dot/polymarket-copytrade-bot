@@ -1,0 +1,15 @@
+anthropic==0.93.0
+aiohttp==3.13.5
+eth-abi==5.2.0
+eth-account==0.13.7
+httpx==0.28.1
+py-builder-signing-sdk==0.0.2
+py-clob-client==0.34.6
+py-clob-client-v2==1.0.1
+pytest==9.0.3
+python-dotenv==1.2.2
+python-telegram-bot==22.7
+requests==2.33.1
+urllib3==2.6.3
+web3==7.15.0
+websockets==15.0.1

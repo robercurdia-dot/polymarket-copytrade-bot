@@ -1,0 +1,55 @@
+# Secrets & environment
+.env
+.env.*
+!.env.example
+
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+.python-version
+
+# Databases
+*.db
+*.db-shm
+*.db-wal
+*.db.bak*
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+bot.log
+bot.log.prev
+logs.txt
+logs/
+
+# Backups
+*.bak
+backups/
+.pre_audit_backup/
+
+# Reports & generated data
+reports/
+web/data.json
+web/.pusd_proxy_cache
+context.md
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code local settings
+.claude/
+.claude-worktrees/
+
+# Internal development notes (not for public release)
+APRENDIZAJES_OPERATIVOS.md
+CRITERIOS_TRADERS.md
+FASE_3A_LOG.md
+FASE_4_PLAN.md
+LESSONS.md
+MIGRATION_DEPOSIT_WALLET.md
+RUNBOOK.md
+TEST_REAL_1USD.md
