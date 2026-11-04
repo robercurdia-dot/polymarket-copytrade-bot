@@ -3,215 +3,402 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Copytrading en directo</title>
+<title>Redfigure · copytrading en directo</title>
 <meta name="description" content="Simulación en papel, en tiempo real, de un bot que copia a los mejores traders de Polymarket. Sin dinero real.">
-<meta property="og:title" content="Copiamos a los mejores traders de Polymarket. Esto es lo que pasa.">
+<meta property="og:title" content="Redfigure · copiamos a los mejores traders de Polymarket">
 <meta property="og:description" content="Un bot replica en tiempo real las apuestas de los traders con mejor historial, con tres estrategias. Simulación en papel, sin dinero real.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5bd3'/%3E%3Cpath d='M6 22l7-7 5 4 8-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='black'/%3E%3Cg fill='white'%3E%3Ccircle cx='6' cy='24' r='1.6'/%3E%3Ccircle cx='11' cy='19' r='1.6'/%3E%3Ccircle cx='16' cy='9' r='1.8'/%3E%3Ccircle cx='21' cy='16' r='1.6'/%3E%3Ccircle cx='26' cy='22' r='1.6'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --fondo: #f6f5f1; --panel: #ffffff; --texto: #1b1d22; --suave: #626875; --linea: #e3e1da;
-  --acento: #2f5bd3; --sube: #127a4a; --baja: #c0392b; --aviso: #fff6dd; --aviso-borde: #e6c665;
-  --a: #2f5bd3; --b: #d1781f; --c: #7a4fc9;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --fondo: #121417; --panel: #1b1e23; --texto: #eceef2; --suave: #9aa1ad; --linea: #2c3038;
-    --acento: #7c9cf5; --sube: #3fbf7f; --baja: #ef6b5b; --aviso: #2a2416; --aviso-borde: #6b5a26;
-    --a: #7c9cf5; --b: #f0a253; --c: #b393f0;
-  }
-}
-:root[data-theme="dark"] {
-  --fondo: #121417; --panel: #1b1e23; --texto: #eceef2; --suave: #9aa1ad; --linea: #2c3038;
-  --acento: #7c9cf5; --sube: #3fbf7f; --baja: #ef6b5b; --aviso: #2a2416; --aviso-borde: #6b5a26;
-  --a: #7c9cf5; --b: #f0a253; --c: #b393f0;
+  --fondo: #000; --tinta: #f2f2f2; --gris: #8a8a8a; --tenue: #4a4a4a; --linea: #1d1d1d; --rejilla: #141414;
+  --sube: #f2f2f2; --baja: #ff5a4e;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--fondo); color: var(--texto);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 48px; }
-header h1 { font-size: clamp(26px, 5vw, 38px); line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
-header p { margin: 0; color: var(--suave); max-width: 640px; }
-.vivo { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--suave); margin-bottom: 14px; }
-.vivo i { width: 9px; height: 9px; border-radius: 50%; background: var(--sube); box-shadow: 0 0 0 0 var(--sube);
-  animation: latido 2s infinite; }
-.vivo.parado i { background: var(--suave); animation: none; }
-@keyframes latido { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sube) 60%, transparent); }
-  70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+html, body { margin: 0; background: var(--fondo); color: var(--tinta); }
+body { font: 12px/1.45 "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.01em; -webkit-font-smoothing: antialiased; }
+main { max-width: 1240px; margin: 0 auto; padding: 18px 16px 40px; }
+.hud { color: var(--gris); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; }
+.caja { border: 1px solid var(--tinta); padding: 1px 5px; display: inline-block; }
+b, .blanco { color: var(--tinta); font-weight: 500; }
+.num { font-variant-numeric: tabular-nums; }
+.baja { color: var(--baja); }
+
+/* cabecera: bloques de lectura como en un instrumento */
+.cabecera { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; }
+.marca { font-size: 13px; font-weight: 600; letter-spacing: 0.22em; }
+.marca .caja { margin-left: 8px; font-size: 10px; letter-spacing: 0.1em; font-weight: 500; }
+.lecturas { display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 2px 22px; margin-top: 10px; }
+.vivo i { display: inline-block; width: 6px; height: 6px; background: var(--tinta); margin-right: 6px; vertical-align: 1px;
+  animation: parpadeo 1.6s steps(2, start) infinite; }
+.vivo.parado i { background: var(--tenue); animation: none; }
+@keyframes parpadeo { to { visibility: hidden; } }
 @media (prefers-reduced-motion: reduce) { .vivo i { animation: none; } }
-.aviso { margin: 20px 0 28px; padding: 12px 14px; background: var(--aviso); border: 1px solid var(--aviso-borde);
-  border-radius: 10px; font-size: 14px; }
-h2 { font-size: 19px; margin: 36px 0 12px; letter-spacing: -0.01em; }
-.agentes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-.agente { background: var(--panel); border: 1px solid var(--linea); border-radius: 14px; padding: 18px; border-top: 4px solid var(--color); }
-.agente h3 { margin: 0; font-size: 16px; }
-.agente .desc { color: var(--suave); font-size: 13px; margin: 2px 0 14px; min-height: 2.6em; }
-.agente .pnl { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.agente .rent { font-size: 14px; color: var(--suave); margin-bottom: 14px; }
-.cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 13px; color: var(--suave); }
-.cifras b { display: block; font-size: 17px; color: var(--texto); font-variant-numeric: tabular-nums; }
-.sube { color: var(--sube); } .baja { color: var(--baja); }
-.panel { background: var(--panel); border: 1px solid var(--linea); border-radius: 14px; padding: 16px; }
-#grafica { width: 100%; height: 260px; display: block; }
-.leyenda { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--suave); margin-top: 8px; }
-.leyenda span::before { content: ""; display: inline-block; width: 12px; height: 3px; border-radius: 2px;
-  background: var(--color); vertical-align: middle; margin-right: 6px; }
-.senal { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 12px 2px; border-bottom: 1px solid var(--linea); }
-.senal:last-child { border-bottom: 0; }
-.senal .mercado { font-weight: 600; font-size: 15px; }
-.senal .detalle { grid-column: 1; color: var(--suave); font-size: 13px; }
-.senal .cuando { grid-row: 1; grid-column: 2; color: var(--suave); font-size: 12px; white-space: nowrap; text-align: right; }
-.resultados { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.resultado { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; border: 1px solid var(--linea);
-  border-radius: 8px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
-.etiqueta { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 5px; padding: 1px 6px;
-  color: #fff; background: var(--color); }
-.resultado small { color: var(--suave); }
-.vacio { color: var(--suave); text-align: center; padding: 28px 8px; }
-.monederos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.monedero { background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
-.monedero code { color: var(--suave); font-size: 12px; }
-.como ol { padding-left: 20px; margin: 0; } .como li { margin-bottom: 6px; }
-footer { margin-top: 40px; color: var(--suave); font-size: 13px; }
-a { color: var(--acento); }
-@media (max-width: 560px) { .cifras b { font-size: 15px; } .agente .pnl { font-size: 28px; } }
+.titular { font-size: clamp(18px, 3.2vw, 28px); line-height: 1.15; font-weight: 500; letter-spacing: -0.01em;
+  margin: 18px 0 6px; max-width: 760px; text-transform: none; }
+.aviso { color: var(--gris); max-width: 760px; }
+
+/* escena principal: montaña de puntos + lecturas laterales */
+.escena { position: relative; margin-top: 18px; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
+#montana { display: block; width: 100%; height: clamp(320px, 52vw, 560px); }
+.lateral { position: absolute; right: 0; top: 12px; width: min(300px, 38%); pointer-events: none; }
+.lateral table { width: 100%; border-collapse: collapse; }
+.lateral td { padding: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+.lateral td + td { text-align: right; padding-left: 8px; }
+.grande { font-size: clamp(26px, 4.4vw, 46px); font-weight: 500; letter-spacing: -0.03em; line-height: 1; }
+.lectura-grande { position: absolute; right: 0; top: 46%; text-align: right; pointer-events: none; }
+.pie-escena { position: absolute; left: 0; bottom: 8px; pointer-events: none; }
+
+/* bloques inferiores */
+.rejilla { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; border-bottom: 1px solid var(--linea); }
+.bloque { padding: 14px 14px 12px 0; border-right: 1px solid var(--linea); min-width: 0; }
+.bloque + .bloque { padding-left: 14px; }
+.bloque:last-child { border-right: 0; padding-right: 0; }
+.s4 { grid-column: span 4; } .s5 { grid-column: span 5; } .s6 { grid-column: span 6; } .s7 { grid-column: span 7; } .s8 { grid-column: span 8; } .s12 { grid-column: span 12; }
+.bloque h2 { margin: 0 0 10px; font: inherit; }
+canvas.grafica { display: block; width: 100%; height: 220px; }
+
+.agente { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; padding: 10px 0; border-top: 1px dashed var(--linea); }
+.agente:first-of-type { border-top: 0; }
+.agente .grande { font-size: clamp(24px, 3.2vw, 34px); grid-row: span 3; align-self: center; min-width: 4.8ch; }
+.agente .datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 10px; }
+
+table.ops { width: 100%; border-collapse: collapse; }
+table.ops th { text-align: left; font-weight: 400; color: var(--gris); padding: 0 6px 6px 0; border-bottom: 1px solid var(--linea); }
+table.ops td { padding: 5px 6px 5px 0; border-bottom: 1px dashed var(--rejilla); vertical-align: top; }
+table.ops td.d { text-align: right; white-space: nowrap; }
+table.ops .mercado { max-width: 360px; }
+.marca-ag { display: inline-block; min-width: 1.8em; border: 1px solid var(--tinta); text-align: center; margin-right: 3px; }
+.vacio { color: var(--gris); padding: 18px 0; }
+.lista-mon { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 18px; }
+.lista-mon div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--rejilla); padding: 3px 0; }
+.como p { margin: 0 0 6px; color: var(--gris); max-width: 680px; }
+.como b { margin-right: 6px; }
+footer { margin-top: 18px; color: var(--tenue); }
+footer a { color: var(--gris); }
+
+@media (max-width: 860px) {
+  .s4, .s5, .s6, .s7, .s8 { grid-column: span 12; }
+  .bloque, .bloque + .bloque { padding: 14px 0 12px; border-right: 0; border-bottom: 1px solid var(--linea); }
+  .bloque:last-child { border-bottom: 0; }
+  .lateral { position: static; width: auto; margin: 10px 0; }
+  .lectura-grande { right: 0; top: 12px; }
+  .pie-escena { position: static; padding: 0 0 10px; }
+  table.ops .oculto-movil { display: none; }
+  .cabecera { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 <main>
-  <header>
-    <div class="vivo" id="vivo"><i></i><span id="actualizado">Cargando…</span></div>
-    <h1>Copiamos a los mejores traders de Polymarket. Esto es lo que pasa.</h1>
-    <p>Un bot vigila cada 2 segundos a los traders con mejor historial y replica sus apuestas con tres estrategias de salida distintas. Todo en papel, con precios reales y en tiempo real.</p>
-  </header>
+  <section class="cabecera">
+    <div>
+      <div class="marca">REDFIGURE <span class="caja">SIM · PAPEL</span></div>
+      <div class="lecturas hud">
+        <span class="vivo" id="vivo"><i></i><span id="estado">conectando</span></span><span id="actualizado" class="num">—</span>
+        <span>origen</span><span class="blanco">polymarket · data api v2</span>
+        <span>sondeo</span><span class="blanco num">2 s · 8 monederos</span>
+        <span>inicio</span><span class="blanco num" id="inicio">—</span>
+      </div>
+    </div>
+    <div class="hud num" id="totales" style="text-align:right"></div>
+  </section>
 
-  <div class="aviso" id="aviso">Simulación en papel con precios reales de Polymarket. No se arriesga dinero. No es asesoramiento financiero.</div>
+  <h1 class="titular">Copiamos a los mejores traders de Polymarket, en directo. Esto es lo que pasa.</h1>
+  <p class="aviso" id="aviso">Simulación en papel con precios reales de Polymarket. No se arriesga dinero. No es asesoramiento financiero.</p>
 
-  <h2>Las tres estrategias</h2>
-  <div class="agentes" id="agentes"></div>
+  <section class="escena" aria-label="Mapa de entradas">
+    <canvas id="montana" role="img" aria-label="Nube de puntos con la densidad de entradas por precio y por momento"></canvas>
+    <div class="lateral hud num"><table id="lateral"></table></div>
+    <div class="lectura-grande num">
+      <div class="hud">resultado combinado · usdc</div>
+      <div class="grande" id="combinado">—</div>
+      <div class="hud" id="combinado-sub"></div>
+    </div>
+    <div class="pie-escena hud">mapa de entradas · eje x: precio de entrada 0 → 1 · fondo → frente: tiempo · altura: importe</div>
+  </section>
 
-  <h2>Resultado acumulado (USDC simulados)</h2>
-  <div class="panel">
-    <svg id="grafica" role="img" aria-label="Evolución del resultado de cada estrategia"></svg>
-    <div class="leyenda" id="leyenda"></div>
-  </div>
+  <section class="rejilla">
+    <div class="bloque s4">
+      <h2 class="hud">estrategias</h2>
+      <div id="agentes"></div>
+    </div>
+    <div class="bloque s8">
+      <h2 class="hud">resultado acumulado · usdc simulados</h2>
+      <canvas class="grafica" id="curva" role="img" aria-label="Evolución del resultado de cada estrategia" style="height:250px"></canvas>
+      <div class="hud" id="leyenda" style="margin-top:6px"></div>
+    </div>
+  </section>
 
-  <h2>Últimas operaciones</h2>
-  <div class="panel" id="operaciones"></div>
+  <section class="rejilla">
+    <div class="bloque s6">
+      <h2 class="hud">resultado por operación · distribución</h2>
+      <canvas class="grafica" id="histo-pnl" role="img" aria-label="Distribución del resultado de cada operación"></canvas>
+    </div>
+    <div class="bloque s6">
+      <h2 class="hud">precio de entrada · distribución</h2>
+      <canvas class="grafica" id="histo-precio" role="img" aria-label="Distribución del precio al que se entra"></canvas>
+    </div>
+  </section>
 
-  <h2>Traders que seguimos</h2>
-  <div class="monederos" id="monederos"></div>
+  <section class="rejilla">
+    <div class="bloque s12">
+      <h2 class="hud">registro de señales · últimas</h2>
+      <table class="ops num">
+        <thead><tr><th>t</th><th>mercado / apuesta</th><th class="oculto-movil">entrada</th><th>a · b · c</th></tr></thead>
+        <tbody id="operaciones"></tbody>
+      </table>
+    </div>
+  </section>
 
-  <h2>Cómo funciona</h2>
-  <div class="panel como">
-    <ol>
-      <li>Analizamos los 200 primeros del ranking mensual de Polymarket y nos quedamos con los que superan un 70 % de acierto y un factor de beneficio de 1,5 en sus posiciones cerradas.</li>
-      <li>Cuando uno de ellos entra en un mercado con suficiente tamaño, el bot abre la misma apuesta en papel con tres estrategias: A sale con objetivo y stop fijos, B con objetivo y stop calibrados, y C espera a que el mercado se resuelva.</li>
-      <li>Cada minuto se recalcula el resultado con el precio real del mercado, y esta página se actualiza sola cada pocos minutos.</li>
-    </ol>
-  </div>
+  <section class="rejilla">
+    <div class="bloque s7">
+      <h2 class="hud">monederos seguidos · acierto histórico · factor de beneficio</h2>
+      <div class="lista-mon num" id="monederos"></div>
+    </div>
+    <div class="bloque s5 como">
+      <h2 class="hud">método</h2>
+      <p><b>01</b>Del top 200 mensual de Polymarket se quedan los traders con más de un 70 % de acierto y un factor de beneficio de 1,5 en sus posiciones cerradas.</p>
+      <p><b>02</b>Cuando uno entra con tamaño suficiente, el bot abre la misma apuesta en papel con tres estrategias: A con objetivo y stop fijos, B calibrados, C hasta la resolución.</p>
+      <p><b>03</b>El resultado se recalcula cada minuto con el precio real del mercado. Esta página se actualiza sola.</p>
+    </div>
+  </section>
 
-  <footer>
-    Proyecto independiente, sin relación con Polymarket. El código es abierto:
-    <a href="https://github.com/robercurdia-dot/polymarket-copytrade-bot">github.com/robercurdia-dot/polymarket-copytrade-bot</a>.
-    Resultados pasados, y más aún simulados, no garantizan resultados futuros.
+  <footer class="hud">
+    Proyecto independiente, sin relación con Polymarket · código abierto:
+    <a href="https://github.com/robercurdia-dot/polymarket-copytrade-bot">github.com/robercurdia-dot/polymarket-copytrade-bot</a>
+    · resultados simulados; no garantizan resultados futuros.
   </footer>
 </main>
 
 <script>
-const COLORES = { A: "var(--a)", B: "var(--b)", C: "var(--c)" };
-const ESTADOS = { open: "abierta", tp_hit: "objetivo alcanzado", sl_hit: "stop", resolved_win: "resuelta: gana",
-  resolved_loss: "resuelta: pierde", timeout: "cerrada por tiempo", disputed: "en disputa", closed: "cerrada" };
-const usd = n => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const pct = n => n == null ? "—" : (n * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " %";
-const clase = n => n > 0 ? "sube" : n < 0 ? "baja" : "";
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-
-function hace(iso) {
-  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 90) return "hace un momento";
-  if (s < 3600) return `hace ${Math.round(s / 60)} min`;
-  if (s < 86400) return `hace ${Math.round(s / 3600)} h`;
-  return `hace ${Math.round(s / 86400)} días`;
-}
-
-function pintarAgentes(agentes) {
-  document.getElementById("agentes").innerHTML = agentes.map(a => `
-    <article class="agente" style="--color:${COLORES[a.id] || "var(--acento)"}">
-      <h3>${esc(a.id)} · ${esc(a.nombre)}</h3>
-      <div class="desc">${esc(a.descripcion)}</div>
-      <div class="pnl ${clase(a.pnl_total)}">${usd(a.pnl_total)} <small style="font-size:14px;font-weight:500">USDC</small></div>
-      <div class="rent">${pct(a.rentabilidad)} sobre ${a.invertido.toLocaleString("es-ES")} USDC apostados</div>
-      <div class="cifras">
-        <div><b>${a.operaciones}</b>operaciones</div>
-        <div><b>${a.abiertas}</b>abiertas</div>
-        <div><b>${pct(a.acierto)}</b>acierto</div>
-      </div>
-    </article>`).join("");
-}
-
-function pintarGrafica(hist, ids) {
-  const svg = document.getElementById("grafica");
-  const W = svg.clientWidth || 800, H = svg.clientHeight || 260, m = { i: 48, d: 12, s: 12, a: 26 };
-  if (hist.length < 2) {
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-    svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--suave)" font-size="14">La curva aparece con la segunda medición.</text>`;
-    return;
-  }
-  const ts = hist.map(p => new Date(p.t).getTime());
-  const vals = hist.flatMap(p => ids.map(id => p[id] ?? 0));
-  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
-  if (hi - lo < 1) { hi += 0.5; lo -= 0.5; }
-  const x = t => m.i + (t - ts[0]) / Math.max(1, ts.at(-1) - ts[0]) * (W - m.i - m.d);
-  const y = v => m.s + (hi - v) / (hi - lo) * (H - m.s - m.a);
-  const marcas = [lo, 0, hi].filter((v, i, a) => a.indexOf(v) === i);
-  let out = marcas.map(v => `<line x1="${m.i}" x2="${W - m.d}" y1="${y(v)}" y2="${y(v)}" stroke="var(--linea)" ${v === 0 ? "" : 'stroke-dasharray="3 4"'}/>
-    <text x="${m.i - 6}" y="${y(v) + 4}" text-anchor="end" fill="var(--suave)" font-size="11">${usd(v)}</text>`).join("");
-  const f = d => d.toLocaleDateString("es-ES", { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-  out += `<text x="${m.i}" y="${H - 6}" fill="var(--suave)" font-size="11">${f(new Date(ts[0]))}</text>
-          <text x="${W - m.d}" y="${H - 6}" text-anchor="end" fill="var(--suave)" font-size="11">${f(new Date(ts.at(-1)))}</text>`;
-  for (const id of ids) {
-    const d = hist.map((p, i) => `${i ? "L" : "M"}${x(ts[i]).toFixed(1)},${y(p[id] ?? 0).toFixed(1)}`).join("");
-    out += `<path d="${d}" fill="none" stroke="${COLORES[id] || "var(--acento)"}" stroke-width="2.2" stroke-linejoin="round"/>`;
-  }
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.innerHTML = out;
-}
-
-function pintarOperaciones(ops) {
-  const caja = document.getElementById("operaciones");
-  if (!ops.length) { caja.innerHTML = `<div class="vacio">Esperando la primera señal de los traders seguidos.</div>`; return; }
-  // Una señal de un trader abre la misma apuesta en las tres estrategias: se agrupan en una fila.
-  const grupos = new Map();
-  for (const o of ops) {
-    const k = [o.mercado, o.apuesta, o.precio_entrada, o.monedero].join("|");
-    if (!grupos.has(k)) grupos.set(k, { ...o, ultima: o.salida || o.entrada, porAgente: [] });
-    const g = grupos.get(k);
-    g.porAgente.push(o);
-    if ((o.salida || o.entrada) > g.ultima) g.ultima = o.salida || o.entrada;
-  }
-  caja.innerHTML = [...grupos.values()].slice(0, 15).map(g => `<div class="senal">
-    <div class="mercado">${esc(g.mercado)}</div>
-    <div class="cuando">${hace(g.ultima)}</div>
-    <div class="detalle">apuesta «${esc(g.apuesta)}» a ${Number(g.precio_entrada).toFixed(2)} · copia a ${esc(g.monedero)}</div>
-    <div class="resultados">${g.porAgente.sort((a, b) => a.agente.localeCompare(b.agente)).map(o => `<span class="resultado">
-      <span class="etiqueta" style="--color:${COLORES[o.agente] || "var(--acento)"}">${esc(o.agente)}</span>
-      <span class="${clase(o.pnl)}">${usd(o.pnl)}</span><small>${esc(ESTADOS[o.estado] || o.estado)}</small></span>`).join("")}</div>
-  </div>`).join("");
-}
-
-function pintarMonederos(ms) {
-  document.getElementById("monederos").innerHTML = ms.map(m => `<div class="monedero">
-    <strong>${esc(m.nombre || "anónimo")}</strong> <code>${esc(m.monedero)}</code><br>
-    <span style="color:var(--suave)">acierto ${pct(m.acierto_historico)} · factor de beneficio ${m.profit_factor > 100 ? "&gt;100" : Number(m.profit_factor).toLocaleString("es-ES", { maximumFractionDigits: 1 })}</span></div>`).join("");
-}
-
+// ── datos ──────────────────────────────────────────────────────────────────
 // En GitHub Pages y en local los datos están junto a la página. En cualquier otro dominio (Vercel) se leen de la
 // rama gh-pages, que el Mac actualiza cada pocos minutos: así la web no se redespliega con cada dato.
 const MISMO_SITIO = /github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname) || location.protocol === "file:";
 const DATOS = MISMO_SITIO ? "" : "https://raw.githubusercontent.com/robercurdia-dot/polymarket-copytrade-bot/gh-pages/";
+const QUIETO = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TINTA = "242,242,242", ROJO = "255,90,78";
+
+const ESTADOS = { open: "abierta", tp_hit: "objetivo", sl_hit: "stop", resolved_win: "gana", resolved_loss: "pierde",
+  timeout: "tiempo", disputed: "disputa", closed: "cerrada" };
+const fmt = (n, d = 2) => Math.abs(n).toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d });
+const usd = n => (n > 0 ? "+" : n < 0 ? "−" : "") + fmt(n);
+const pct = n => n == null ? "—" : fmt(n * 100, 1) + "%";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const hhmm = iso => new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+function hace(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  return s < 90 ? "ahora" : s < 3600 ? `${Math.round(s / 60)} min` : s < 86400 ? `${Math.round(s / 3600)} h` : `${Math.round(s / 86400)} d`;
+}
+// Azar con semilla: la textura de puntos no cambia entre redibujados.
+function semilla(n) { return () => (n = (n * 1664525 + 1013904223) >>> 0) / 4294967296; }
+
+function lienzo(c) {
+  const r = c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+  c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
+  const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, r.width, r.height);
+  return { x, W: r.width, H: r.height };
+}
+function rotulo(x, t, px, py, alinear = "left", color = "138,138,138") {
+  x.font = '10px "IBM Plex Mono", ui-monospace, monospace'; x.textAlign = alinear; x.fillStyle = `rgba(${color},1)`; x.fillText(t, px, py);
+}
+
+// ── montaña de puntos: densidad de entradas por precio (x) y por momento (profundidad) ──
+let fase = 0, modelo = null;
+function construirMontana(ops) {
+  const NX = 170, NZ = 56, h = Array.from({ length: NZ }, () => new Float32Array(NX));
+  const lista = ops.slice().sort((a, b) => a.entrada.localeCompare(b.entrada));
+  const n = lista.length;
+  lista.forEach((o, i) => {
+    const px = Math.min(0.99, Math.max(0.01, Number(o.precio_entrada) || 0.5));
+    const pz = n > 1 ? i / (n - 1) : 0.5;
+    const amp = Math.sqrt(Number(o.importe) || 1);
+    for (let z = 0; z < NZ; z++) {
+      const dz = z / (NZ - 1) - pz, gz = Math.exp(-(dz * dz) / 0.012);
+      if (gz < 0.01) continue;
+      for (let xi = 0; xi < NX; xi++) {
+        const dx = xi / (NX - 1) - px;
+        h[z][xi] += amp * gz * Math.exp(-(dx * dx) / 0.0016);
+      }
+    }
+  });
+  let max = 0; for (const fila of h) for (const v of fila) max = Math.max(max, v);
+  const r = semilla(7);
+  for (let z = 0; z < NZ; z++) for (let xi = 0; xi < NX; xi++) {
+    const v = max ? h[z][xi] / max : 0;
+    h[z][xi] = Math.pow(v, 0.8) + 0.035 * r();  // suelo con grano
+  }
+  return { h, NX, NZ, n };
+}
+function pintarMontana() {
+  const c = document.getElementById("montana"); if (!modelo) return;
+  const { x, W, H } = lienzo(c), { h, NX, NZ } = modelo, r = semilla(11);
+  x.strokeStyle = "rgba(255,255,255,0.045)"; x.lineWidth = 1;
+  for (let gy = 0; gy < H; gy += 46) { x.beginPath(); x.moveTo(0, gy + 0.5); x.lineTo(W, gy + 0.5); x.stroke(); }
+  for (let gx = 0; gx < W; gx += 92) { x.beginPath(); x.moveTo(gx + 0.5, 0); x.lineTo(gx + 0.5, H); x.stroke(); }
+  const base = H * 0.80, alto = H * 0.66, prof = H * 0.26;
+  x.globalCompositeOperation = "lighter";   // los puntos se suman: las cumbres brillan
+  for (let z = 0; z < NZ; z++) {
+    const t = z / (NZ - 1);                 // 0 = fondo, 1 = frente
+    const escala = 0.5 + 0.5 * t;
+    const y0 = base - prof * (1 - t);
+    const ancho = W * 0.94 * escala, x0 = (W - ancho) / 2, celda = ancho / NX;
+    for (let xi = 0; xi < NX; xi++) {
+      const v = h[z][xi];
+      const ondula = QUIETO ? 0 : 0.01 * Math.sin(fase + xi * 0.19 + z * 0.33);
+      const altura = (v + ondula) * alto * escala;
+      const px = x0 + xi * celda, py = y0 - altura;
+      // cresta: un punto firme por celda, más brillante cuanto más alto y más cerca
+      x.fillStyle = `rgba(${TINTA},${(0.14 + 0.6 * t + 0.4 * Math.min(1, v * 1.4)).toFixed(3)})`;
+      x.fillRect(px, py, 1.3, 1.3);
+      // ladera: nube de puntos bajo la cresta, densa en las cumbres
+      const n = Math.floor(Math.pow(v, 1.1) * 14 * (0.6 + 0.4 * t));
+      for (let k = 0; k < n; k++) {
+        const f = Math.pow(r(), 1.8);              // más puntos cerca de la cresta
+        x.fillStyle = `rgba(${TINTA},${((0.06 + 0.32 * t) * (1 - f * 0.7)).toFixed(3)})`;
+        x.fillRect(px + (r() - 0.5) * celda * 1.8, py + f * altura, 1, 1);
+      }
+    }
+  }
+  x.globalCompositeOperation = "source-over";
+  for (const p of [0, 0.25, 0.5, 0.75, 1]) rotulo(x, p.toFixed(2), W * 0.03 + W * 0.94 * p, H - 30, p === 0 ? "left" : p === 1 ? "right" : "center");
+  if (!modelo.n) rotulo(x, "esperando la primera señal", W / 2, H * 0.5, "center", TINTA);
+}
+function animar() { fase += 0.05; pintarMontana(); if (!QUIETO) setTimeout(() => requestAnimationFrame(animar), 140); }
+
+// ── curva acumulada en puntos (cordillera inferior de la referencia) ──────
+function pintarCurva(hist, ids) {
+  const c = document.getElementById("curva"), { x, W, H } = lienzo(c), r = semilla(23);
+  const m = { i: 54, d: 8, s: 10, a: 22 };
+  if (hist.length < 2) { rotulo(x, "la curva aparece con la segunda medición", W / 2, H / 2, "center"); return; }
+  const ts = hist.map(p => new Date(p.t).getTime());
+  const vals = hist.flatMap(p => ids.map(id => p[id] ?? 0));
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals); if (hi - lo < 1) { hi += 0.5; lo -= 0.5; }
+  const X = t => m.i + (t - ts[0]) / Math.max(1, ts.at(-1) - ts[0]) * (W - m.i - m.d);
+  const Y = v => m.s + (hi - v) / (hi - lo) * (H - m.s - m.a);
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + (hi - lo) * k / 4, yy = Math.round(Y(v)) + 0.5;
+    x.strokeStyle = "rgba(255,255,255,0.06)"; x.setLineDash([2, 4]); x.beginPath(); x.moveTo(m.i, yy); x.lineTo(W - m.d, yy); x.stroke();
+    rotulo(x, usd(v), m.i - 6, yy + 3, "right");
+  }
+  x.setLineDash([]); x.strokeStyle = "rgba(255,255,255,0.25)"; x.beginPath(); x.moveTo(m.i, Y(0) + 0.5); x.lineTo(W - m.d, Y(0) + 0.5); x.stroke();
+  rotulo(x, hhmm(hist[0].t), m.i, H - 6); rotulo(x, hhmm(hist.at(-1).t), W - m.d, H - 6, "right");
+  const brillo = { A: 1, B: 0.55, C: 0.8 };
+  ids.forEach((id, j) => {
+    const b = brillo[id] ?? 0.7;
+    for (let i = 0; i < hist.length - 1; i++) {
+      const pasos = Math.max(2, Math.ceil((X(ts[i + 1]) - X(ts[i])) / 1.6));
+      for (let s = 0; s < pasos; s++) {
+        const f = s / pasos, tx = X(ts[i]) + f * (X(ts[i + 1]) - X(ts[i]));
+        const v = (hist[i][id] ?? 0) * (1 - f) + (hist[i + 1][id] ?? 0) * f, ty = Y(v), y0 = Y(0);
+        x.fillStyle = `rgba(${v < 0 ? ROJO : TINTA},${b})`; x.fillRect(tx, ty, 1.4, 1.4);
+        // relleno de puntos hacia el cero, cada vez más tenue
+        const tramo = y0 - ty, nPuntos = Math.min(6, Math.abs(tramo) / 7);
+        for (let k = 0; k < nPuntos; k++) {
+          x.fillStyle = `rgba(${TINTA},${(0.28 * b * (1 - k / 6)).toFixed(3)})`;
+          x.fillRect(tx + (r() - 0.5) * 2, ty + r() * tramo, 1, 1);
+        }
+      }
+    }
+    const ult = hist.at(-1)[id] ?? 0;
+    rotulo(x, `${id} ${usd(ult)}`, W - m.d - 2, Y(ult) - 6 - j * 0, "right", TINTA);
+  });
+}
+
+// ── histogramas de puntos ─────────────────────────────────────────────────
+function histograma(id, valores, { min, max, bins, etiqueta }) {
+  const c = document.getElementById(id), { x, W, H } = lienzo(c), r = semilla(31 + bins);
+  const m = { i: 30, d: 6, s: 8, a: 22 };
+  if (!valores.length) { rotulo(x, "sin operaciones todavía", W / 2, H / 2, "center"); return; }
+  const cuenta = new Array(bins).fill(0);
+  for (const v of valores) cuenta[Math.min(bins - 1, Math.max(0, Math.floor((v - min) / (max - min) * bins)))]++;
+  const tope = Math.max(...cuenta), ancho = (W - m.i - m.d) / bins, alto = H - m.s - m.a;
+  for (let k = 0; k <= 4; k++) {
+    const yy = Math.round(m.s + alto * k / 4) + 0.5;
+    x.strokeStyle = "rgba(255,255,255,0.05)"; x.beginPath(); x.moveTo(m.i, yy); x.lineTo(W - m.d, yy); x.stroke();
+    rotulo(x, String(Math.round(tope * (1 - k / 4))), m.i - 6, yy + 3, "right");
+  }
+  cuenta.forEach((n, b) => {
+    const h = n / tope * alto, px = m.i + b * ancho, centro = min + (b + 0.5) * (max - min) / bins;
+    const puntos = Math.round(h * ancho / 5);
+    for (let k = 0; k < puntos; k++) {
+      const yy = H - m.a - Math.pow(r(), 0.7) * h;
+      x.fillStyle = `rgba(${centro < 0 && etiqueta === "pnl" ? ROJO : TINTA},${(0.35 + 0.65 * r()).toFixed(2)})`;
+      x.fillRect(px + r() * (ancho - 1), yy, 1.1, 1.1);
+    }
+    if (n) { x.fillStyle = `rgba(${TINTA},0.9)`; x.fillRect(px, H - m.a - h, Math.max(1, ancho - 1), 1); }
+  });
+  rotulo(x, etiqueta === "pnl" ? usd(min) : min.toFixed(2), m.i, H - 6);
+  rotulo(x, etiqueta === "pnl" ? "0" : ((min + max) / 2).toFixed(2), m.i + (W - m.i - m.d) / 2, H - 6, "center");
+  rotulo(x, etiqueta === "pnl" ? usd(max) : max.toFixed(2), W - m.d, H - 6, "right");
+}
+
+// ── texto ─────────────────────────────────────────────────────────────────
+function pintarTexto(p) {
+  const total = p.agentes.reduce((s, a) => s + a.pnl_total, 0), ops = p.agentes.reduce((s, a) => s + a.operaciones, 0);
+  const abiertas = p.agentes.reduce((s, a) => s + a.abiertas, 0), invertido = p.agentes.reduce((s, a) => s + a.invertido, 0);
+  const el = document.getElementById("combinado");
+  el.textContent = usd(total); el.classList.toggle("baja", total < 0);
+  document.getElementById("combinado-sub").textContent = `${pct(invertido ? total / invertido : null)} sobre ${fmt(invertido, 0)} apostados`;
+  document.getElementById("totales").innerHTML = `operaciones <b>${ops}</b><br>abiertas <b>${abiertas}</b><br>monederos <b>${p.monederos.length}</b>`;
+  document.getElementById("inicio").textContent = p.inicio ? new Date(p.inicio).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+  document.getElementById("lateral").innerHTML = p.agentes.map(a => `<tr><td>${esc(a.id)} · ${esc(a.nombre)}</td><td class="${a.pnl_total < 0 ? "baja" : "blanco"}">${usd(a.pnl_total)}</td></tr>
+    <tr><td>&nbsp;&nbsp;ops / abiertas</td><td>${a.operaciones} / ${a.abiertas}</td></tr>
+    <tr><td>&nbsp;&nbsp;acierto</td><td>${pct(a.acierto)}</td></tr>`).join("");
+  document.getElementById("agentes").innerHTML = p.agentes.map(a => `<div class="agente num">
+      <div class="grande ${a.pnl_total < 0 ? "baja" : ""}">${usd(a.pnl_total)}</div>
+      <div><b>${esc(a.id)}</b> <span class="hud">${esc(a.nombre)}</span></div>
+      <div class="hud">${esc(a.descripcion)}</div>
+      <div class="datos hud"><span>ops <b>${a.operaciones}</b></span><span>abiertas <b>${a.abiertas}</b></span><span>acierto <b>${pct(a.acierto)}</b></span></div>
+    </div>`).join("");
+  document.getElementById("leyenda").innerHTML = p.agentes.map(a => `${esc(a.id)} · ${esc(a.nombre)}`).join("&nbsp;&nbsp;&nbsp;") + "&nbsp;&nbsp;&nbsp;<span class='baja'>rojo: por debajo de cero</span>";
+
+  const caja = document.getElementById("operaciones");
+  if (!p.recientes.length) caja.innerHTML = `<tr><td colspan="4" class="vacio">esperando la primera señal</td></tr>`;
+  else {
+    const grupos = new Map();
+    for (const o of p.recientes) {
+      const k = [o.mercado, o.apuesta, o.precio_entrada, o.monedero].join("|");
+      if (!grupos.has(k)) grupos.set(k, { ...o, por: {} });
+      grupos.get(k).por[o.agente] = o;
+    }
+    caja.innerHTML = [...grupos.values()].slice(0, 16).map(g => `<tr>
+      <td class="hud">${hace(g.entrada)}</td>
+      <td class="mercado">${esc(g.mercado)}<br><span class="hud">${esc(g.apuesta)} · copia ${esc(g.monedero)}</span></td>
+      <td class="d oculto-movil">${Number(g.precio_entrada).toFixed(2)}</td>
+      <td class="d">${["A", "B", "C"].map(id => g.por[id]
+        ? `<span class="${g.por[id].pnl < 0 ? "baja" : ""}" title="${esc(ESTADOS[g.por[id].estado] || g.por[id].estado)}">${usd(g.por[id].pnl)}</span>`
+        : `<span class="hud">—</span>`).join(" · ")}</td></tr>`).join("");
+  }
+  document.getElementById("monederos").innerHTML = p.monederos.map(m => `<div><span>${esc((m.nombre || "anónimo").slice(0, 16))} <span class="hud">${esc(m.monedero)}</span></span>
+    <span>${pct(m.acierto_historico)} · ${m.profit_factor > 100 ? "&gt;100" : fmt(m.profit_factor, 1)}</span></div>`).join("");
+}
+
+// Operaciones para las gráficas: todas si el JSON trae «puntos», si no, las recientes.
+function puntos(p) {
+  return p.puntos ? p.puntos.map(([precio_entrada, importe, entrada, pnl, agente]) => ({ precio_entrada, importe, entrada, pnl, agente }))
+                  : p.recientes;
+}
+
+let ultimo = null;
+function pintarGraficas() {
+  if (!ultimo) return;
+  const { p, h } = ultimo, ids = p.agentes.map(a => a.id);
+  pintarMontana();
+  pintarCurva(h, ids);
+  const todas = puntos(p), pnls = todas.map(o => Number(o.pnl) || 0);
+  const lim = Math.max(1, ...pnls.map(Math.abs));
+  histograma("histo-pnl", pnls, { min: -lim, max: lim, bins: 40, etiqueta: "pnl" });
+  histograma("histo-precio", todas.map(o => Number(o.precio_entrada) || 0), { min: 0, max: 1, bins: 40, etiqueta: "precio" });
+}
 
 async function cargar() {
   try {
@@ -222,23 +409,22 @@ async function cargar() {
     ]);
     const viejo = Date.now() - new Date(p.actualizado).getTime() > 20 * 60 * 1000;
     document.getElementById("vivo").classList.toggle("parado", viejo);
-    document.getElementById("actualizado").textContent = (viejo ? "En pausa · última actualización " : "En directo · actualizado ") + hace(p.actualizado);
+    document.getElementById("estado").textContent = viejo ? "en pausa" : "en directo";
+    document.getElementById("actualizado").textContent = "act. " + hace(p.actualizado);
     if (p.aviso) document.getElementById("aviso").textContent = p.aviso;
-    const ids = p.agentes.map(a => a.id);
-    pintarAgentes(p.agentes);
-    ultimo = { h, ids };
-    pintarGrafica(h, ids);
-    document.getElementById("leyenda").innerHTML = p.agentes.map(a => `<span style="--color:${COLORES[a.id]}">${esc(a.id)} · ${esc(a.nombre)}</span>`).join("");
-    pintarOperaciones(p.recientes);
-    pintarMonederos(p.monederos);
+    const nuevo = !ultimo || ultimo.p.actualizado !== p.actualizado;
+    ultimo = { p, h };
+    if (nuevo) modelo = construirMontana(puntos(p));
+    pintarTexto(p);
+    pintarGraficas();
   } catch (e) {
-    document.getElementById("actualizado").textContent = "No se pudieron cargar los datos";
+    document.getElementById("estado").textContent = "sin datos";
   }
 }
-let ultimo = null;
-cargar();
+cargar().then(() => { if (!QUIETO) animar(); });
 setInterval(cargar, 60 * 1000);
-addEventListener("resize", () => ultimo && pintarGrafica(ultimo.h, ultimo.ids));
+let espera; addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(pintarGraficas, 120); });
+document.fonts && document.fonts.ready.then(pintarGraficas);
 </script>
 </body>
 </html>

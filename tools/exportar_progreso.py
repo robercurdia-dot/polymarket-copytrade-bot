@@ -22,6 +22,7 @@ ABIERTA = "open"
 GANADAS = {"tp_hit", "resolved_win"}
 PERDIDAS = {"sl_hit", "resolved_loss"}
 MAX_HISTORIAL = 5000
+MAX_PUNTOS = 3000
 
 
 def _filas(conn, sql, *args):
@@ -95,6 +96,10 @@ def exportar(db: str, salida: Path) -> dict:
             else round(_pnl_abierto(t), 2),
             "monedero": _corta(t["wallet_copied"]),
         } for t in recientes],
+        # Todas las operaciones en formato compacto para las gráficas: [precio, importe, entrada, pnl, agente].
+        "puntos": [[t["entry_price"], t["entry_size_usdc"], t["entry_at"],
+                    round(float(t["realized_pnl_net"]), 2) if t["realized_pnl_net"] is not None
+                    else round(_pnl_abierto(t), 2), t["agent_id"]] for t in trades[-MAX_PUNTOS:]],
         "monederos": [{
             "monedero": _corta(m["address"]), "nombre": m["username"],
             "acierto_historico": m["win_rate"], "profit_factor": m["profit_factor"],
