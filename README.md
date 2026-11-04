@@ -80,6 +80,24 @@ python3 -c "import database; database.init_db()"
 
 The dashboard is served at `http://localhost:8080`.
 
+## Paper simulation and public progress page
+
+The bot can run as a pure paper simulation (no keys, no real money) and publish its progress as a static page
+on GitHub Pages.
+
+```bash
+cp .env.example .env            # leave the POLY_* keys empty; PAPER_TRADING=true, REAL_TRADING_ENABLED=false
+python3 tools/construir_whitelist.py   # rebuilds the wallet whitelist from the monthly leaderboard (~8 min)
+./start.sh                       # paper mode
+./tools/publicar_web.sh          # in another terminal: exports and pushes publico/ to gh-pages every 5 min
+```
+
+Then enable Pages once: *Settings → Pages → Branch: `gh-pages`, folder `/ (root)`*. The page reads
+`progreso.json` and `historial.json`, built by `tools/exportar_progreso.py` from the simulation database only.
+
+Polymarket retired Data API v1 in November 2026; `data_api.py` serves every former v1 call from `/v2` and returns
+the v1 response shape, so the rest of the code is unchanged. Without `TELEGRAM_BOT_TOKEN`, alerts go to the log.
+
 ## Configuration
 
 All runtime behavior is controlled by environment variables. Key groups:

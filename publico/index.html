@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copytrading en directo</title>
+<meta name="description" content="Simulación en papel, en tiempo real, de un bot que copia a los mejores traders de Polymarket. Sin dinero real.">
+<meta property="og:title" content="Copiamos a los mejores traders de Polymarket. Esto es lo que pasa.">
+<meta property="og:description" content="Un bot replica en tiempo real las apuestas de los traders con mejor historial, con tres estrategias. Simulación en papel, sin dinero real.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5bd3'/%3E%3Cpath d='M6 22l7-7 5 4 8-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  --fondo: #f6f5f1; --panel: #ffffff; --texto: #1b1d22; --suave: #626875; --linea: #e3e1da;
+  --acento: #2f5bd3; --sube: #127a4a; --baja: #c0392b; --aviso: #fff6dd; --aviso-borde: #e6c665;
+  --a: #2f5bd3; --b: #d1781f; --c: #7a4fc9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #121417; --panel: #1b1e23; --texto: #eceef2; --suave: #9aa1ad; --linea: #2c3038;
+    --acento: #7c9cf5; --sube: #3fbf7f; --baja: #ef6b5b; --aviso: #2a2416; --aviso-borde: #6b5a26;
+    --a: #7c9cf5; --b: #f0a253; --c: #b393f0;
+  }
+}
+:root[data-theme="dark"] {
+  --fondo: #121417; --panel: #1b1e23; --texto: #eceef2; --suave: #9aa1ad; --linea: #2c3038;
+  --acento: #7c9cf5; --sube: #3fbf7f; --baja: #ef6b5b; --aviso: #2a2416; --aviso-borde: #6b5a26;
+  --a: #7c9cf5; --b: #f0a253; --c: #b393f0;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 48px; }
+header h1 { font-size: clamp(26px, 5vw, 38px); line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
+header p { margin: 0; color: var(--suave); max-width: 640px; }
+.vivo { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--suave); margin-bottom: 14px; }
+.vivo i { width: 9px; height: 9px; border-radius: 50%; background: var(--sube); box-shadow: 0 0 0 0 var(--sube);
+  animation: latido 2s infinite; }
+.vivo.parado i { background: var(--suave); animation: none; }
+@keyframes latido { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sube) 60%, transparent); }
+  70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .vivo i { animation: none; } }
+.aviso { margin: 20px 0 28px; padding: 12px 14px; background: var(--aviso); border: 1px solid var(--aviso-borde);
+  border-radius: 10px; font-size: 14px; }
+h2 { font-size: 19px; margin: 36px 0 12px; letter-spacing: -0.01em; }
+.agentes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.agente { background: var(--panel); border: 1px solid var(--linea); border-radius: 14px; padding: 18px; border-top: 4px solid var(--color); }
+.agente h3 { margin: 0; font-size: 16px; }
+.agente .desc { color: var(--suave); font-size: 13px; margin: 2px 0 14px; min-height: 2.6em; }
+.agente .pnl { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.agente .rent { font-size: 14px; color: var(--suave); margin-bottom: 14px; }
+.cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 13px; color: var(--suave); }
+.cifras b { display: block; font-size: 17px; color: var(--texto); font-variant-numeric: tabular-nums; }
+.sube { color: var(--sube); } .baja { color: var(--baja); }
+.panel { background: var(--panel); border: 1px solid var(--linea); border-radius: 14px; padding: 16px; }
+#grafica { width: 100%; height: 260px; display: block; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--suave); margin-top: 8px; }
+.leyenda span::before { content: ""; display: inline-block; width: 12px; height: 3px; border-radius: 2px;
+  background: var(--color); vertical-align: middle; margin-right: 6px; }
+.senal { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 12px 2px; border-bottom: 1px solid var(--linea); }
+.senal:last-child { border-bottom: 0; }
+.senal .mercado { font-weight: 600; font-size: 15px; }
+.senal .detalle { grid-column: 1; color: var(--suave); font-size: 13px; }
+.senal .cuando { grid-row: 1; grid-column: 2; color: var(--suave); font-size: 12px; white-space: nowrap; text-align: right; }
+.resultados { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.resultado { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; border: 1px solid var(--linea);
+  border-radius: 8px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
+.etiqueta { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 5px; padding: 1px 6px;
+  color: #fff; background: var(--color); }
+.resultado small { color: var(--suave); }
+.vacio { color: var(--suave); text-align: center; padding: 28px 8px; }
+.monederos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.monedero { background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.monedero code { color: var(--suave); font-size: 12px; }
+.como ol { padding-left: 20px; margin: 0; } .como li { margin-bottom: 6px; }
+footer { margin-top: 40px; color: var(--suave); font-size: 13px; }
+a { color: var(--acento); }
+@media (max-width: 560px) { .cifras b { font-size: 15px; } .agente .pnl { font-size: 28px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="vivo" id="vivo"><i></i><span id="actualizado">Cargando…</span></div>
+    <h1>Copiamos a los mejores traders de Polymarket. Esto es lo que pasa.</h1>
+    <p>Un bot vigila cada 2 segundos a los traders con mejor historial y replica sus apuestas con tres estrategias de salida distintas. Todo en papel, con precios reales y en tiempo real.</p>
+  </header>
+
+  <div class="aviso" id="aviso">Simulación en papel con precios reales de Polymarket. No se arriesga dinero. No es asesoramiento financiero.</div>
+
+  <h2>Las tres estrategias</h2>
+  <div class="agentes" id="agentes"></div>
+
+  <h2>Resultado acumulado (USDC simulados)</h2>
+  <div class="panel">
+    <svg id="grafica" role="img" aria-label="Evolución del resultado de cada estrategia"></svg>
+    <div class="leyenda" id="leyenda"></div>
+  </div>
+
+  <h2>Últimas operaciones</h2>
+  <div class="panel" id="operaciones"></div>
+
+  <h2>Traders que seguimos</h2>
+  <div class="monederos" id="monederos"></div>
+
+  <h2>Cómo funciona</h2>
+  <div class="panel como">
+    <ol>
+      <li>Analizamos los 200 primeros del ranking mensual de Polymarket y nos quedamos con los que superan un 70 % de acierto y un factor de beneficio de 1,5 en sus posiciones cerradas.</li>
+      <li>Cuando uno de ellos entra en un mercado con suficiente tamaño, el bot abre la misma apuesta en papel con tres estrategias: A sale con objetivo y stop fijos, B con objetivo y stop calibrados, y C espera a que el mercado se resuelva.</li>
+      <li>Cada minuto se recalcula el resultado con el precio real del mercado, y esta página se actualiza sola cada pocos minutos.</li>
+    </ol>
+  </div>
+
+  <footer>
+    Proyecto independiente, sin relación con Polymarket. El código es abierto:
+    <a href="https://github.com/robercurdia-dot/polymarket-copytrade-bot">github.com/robercurdia-dot/polymarket-copytrade-bot</a>.
+    Resultados pasados, y más aún simulados, no garantizan resultados futuros.
+  </footer>
+</main>
+
+<script>
+const COLORES = { A: "var(--a)", B: "var(--b)", C: "var(--c)" };
+const ESTADOS = { open: "abierta", tp_hit: "objetivo alcanzado", sl_hit: "stop", resolved_win: "resuelta: gana",
+  resolved_loss: "resuelta: pierde", timeout: "cerrada por tiempo", disputed: "en disputa", closed: "cerrada" };
+const usd = n => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = n => n == null ? "—" : (n * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " %";
+const clase = n => n > 0 ? "sube" : n < 0 ? "baja" : "";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function hace(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 90) return "hace un momento";
+  if (s < 3600) return `hace ${Math.round(s / 60)} min`;
+  if (s < 86400) return `hace ${Math.round(s / 3600)} h`;
+  return `hace ${Math.round(s / 86400)} días`;
+}
+
+function pintarAgentes(agentes) {
+  document.getElementById("agentes").innerHTML = agentes.map(a => `
+    <article class="agente" style="--color:${COLORES[a.id] || "var(--acento)"}">
+      <h3>${esc(a.id)} · ${esc(a.nombre)}</h3>
+      <div class="desc">${esc(a.descripcion)}</div>
+      <div class="pnl ${clase(a.pnl_total)}">${usd(a.pnl_total)} <small style="font-size:14px;font-weight:500">USDC</small></div>
+      <div class="rent">${pct(a.rentabilidad)} sobre ${a.invertido.toLocaleString("es-ES")} USDC apostados</div>
+      <div class="cifras">
+        <div><b>${a.operaciones}</b>operaciones</div>
+        <div><b>${a.abiertas}</b>abiertas</div>
+        <div><b>${pct(a.acierto)}</b>acierto</div>
+      </div>
+    </article>`).join("");
+}
+
+function pintarGrafica(hist, ids) {
+  const svg = document.getElementById("grafica");
+  const W = svg.clientWidth || 800, H = svg.clientHeight || 260, m = { i: 48, d: 12, s: 12, a: 26 };
+  if (hist.length < 2) {
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--suave)" font-size="14">La curva aparece con la segunda medición.</text>`;
+    return;
+  }
+  const ts = hist.map(p => new Date(p.t).getTime());
+  const vals = hist.flatMap(p => ids.map(id => p[id] ?? 0));
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+  if (hi - lo < 1) { hi += 0.5; lo -= 0.5; }
+  const x = t => m.i + (t - ts[0]) / Math.max(1, ts.at(-1) - ts[0]) * (W - m.i - m.d);
+  const y = v => m.s + (hi - v) / (hi - lo) * (H - m.s - m.a);
+  const marcas = [lo, 0, hi].filter((v, i, a) => a.indexOf(v) === i);
+  let out = marcas.map(v => `<line x1="${m.i}" x2="${W - m.d}" y1="${y(v)}" y2="${y(v)}" stroke="var(--linea)" ${v === 0 ? "" : 'stroke-dasharray="3 4"'}/>
+    <text x="${m.i - 6}" y="${y(v) + 4}" text-anchor="end" fill="var(--suave)" font-size="11">${usd(v)}</text>`).join("");
+  const f = d => d.toLocaleDateString("es-ES", { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  out += `<text x="${m.i}" y="${H - 6}" fill="var(--suave)" font-size="11">${f(new Date(ts[0]))}</text>
+          <text x="${W - m.d}" y="${H - 6}" text-anchor="end" fill="var(--suave)" font-size="11">${f(new Date(ts.at(-1)))}</text>`;
+  for (const id of ids) {
+    const d = hist.map((p, i) => `${i ? "L" : "M"}${x(ts[i]).toFixed(1)},${y(p[id] ?? 0).toFixed(1)}`).join("");
+    out += `<path d="${d}" fill="none" stroke="${COLORES[id] || "var(--acento)"}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  }
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = out;
+}
+
+function pintarOperaciones(ops) {
+  const caja = document.getElementById("operaciones");
+  if (!ops.length) { caja.innerHTML = `<div class="vacio">Esperando la primera señal de los traders seguidos.</div>`; return; }
+  // Una señal de un trader abre la misma apuesta en las tres estrategias: se agrupan en una fila.
+  const grupos = new Map();
+  for (const o of ops) {
+    const k = [o.mercado, o.apuesta, o.precio_entrada, o.monedero].join("|");
+    if (!grupos.has(k)) grupos.set(k, { ...o, ultima: o.salida || o.entrada, porAgente: [] });
+    const g = grupos.get(k);
+    g.porAgente.push(o);
+    if ((o.salida || o.entrada) > g.ultima) g.ultima = o.salida || o.entrada;
+  }
+  caja.innerHTML = [...grupos.values()].slice(0, 15).map(g => `<div class="senal">
+    <div class="mercado">${esc(g.mercado)}</div>
+    <div class="cuando">${hace(g.ultima)}</div>
+    <div class="detalle">apuesta «${esc(g.apuesta)}» a ${Number(g.precio_entrada).toFixed(2)} · copia a ${esc(g.monedero)}</div>
+    <div class="resultados">${g.porAgente.sort((a, b) => a.agente.localeCompare(b.agente)).map(o => `<span class="resultado">
+      <span class="etiqueta" style="--color:${COLORES[o.agente] || "var(--acento)"}">${esc(o.agente)}</span>
+      <span class="${clase(o.pnl)}">${usd(o.pnl)}</span><small>${esc(ESTADOS[o.estado] || o.estado)}</small></span>`).join("")}</div>
+  </div>`).join("");
+}
+
+function pintarMonederos(ms) {
+  document.getElementById("monederos").innerHTML = ms.map(m => `<div class="monedero">
+    <strong>${esc(m.nombre || "anónimo")}</strong> <code>${esc(m.monedero)}</code><br>
+    <span style="color:var(--suave)">acierto ${pct(m.acierto_historico)} · factor de beneficio ${m.profit_factor > 100 ? "&gt;100" : Number(m.profit_factor).toLocaleString("es-ES", { maximumFractionDigits: 1 })}</span></div>`).join("");
+}
+
+// En GitHub Pages y en local los datos están junto a la página. En cualquier otro dominio (Vercel) se leen de la
+// rama gh-pages, que el Mac actualiza cada pocos minutos: así la web no se redespliega con cada dato.
+const MISMO_SITIO = /github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname) || location.protocol === "file:";
+const DATOS = MISMO_SITIO ? "" : "https://raw.githubusercontent.com/robercurdia-dot/polymarket-copytrade-bot/gh-pages/";
+
+async function cargar() {
+  try {
+    const sinCache = MISMO_SITIO ? `?t=${Date.now()}` : "";
+    const [p, h] = await Promise.all([
+      fetch(DATOS + "progreso.json" + sinCache).then(r => r.json()),
+      fetch(DATOS + "historial.json" + sinCache).then(r => r.json()).catch(() => []),
+    ]);
+    const viejo = Date.now() - new Date(p.actualizado).getTime() > 20 * 60 * 1000;
+    document.getElementById("vivo").classList.toggle("parado", viejo);
+    document.getElementById("actualizado").textContent = (viejo ? "En pausa · última actualización " : "En directo · actualizado ") + hace(p.actualizado);
+    if (p.aviso) document.getElementById("aviso").textContent = p.aviso;
+    const ids = p.agentes.map(a => a.id);
+    pintarAgentes(p.agentes);
+    ultimo = { h, ids };
+    pintarGrafica(h, ids);
+    document.getElementById("leyenda").innerHTML = p.agentes.map(a => `<span style="--color:${COLORES[a.id]}">${esc(a.id)} · ${esc(a.nombre)}</span>`).join("");
+    pintarOperaciones(p.recientes);
+    pintarMonederos(p.monederos);
+  } catch (e) {
+    document.getElementById("actualizado").textContent = "No se pudieron cargar los datos";
+  }
+}
+let ultimo = null;
+cargar();
+setInterval(cargar, 60 * 1000);
+addEventListener("resize", () => ultimo && pintarGrafica(ultimo.h, ultimo.ids));
+</script>
+</body>
+</html>

@@ -53,3 +53,8 @@ LESSONS.md
 MIGRATION_DEPOSIT_WALLET.md
 RUNBOOK.md
 TEST_REAL_1USD.md
+
+# Simulación en papel y web de progreso (los datos se publican en la rama gh-pages, no en master)
+sim/
+.gh-pages/
+publico/*.json
