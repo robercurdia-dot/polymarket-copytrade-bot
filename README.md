@@ -16,6 +16,8 @@ The project started with classic take-profit / stop-loss strategies on top of th
 
 The system ran live for **~5 weeks (mid-May → mid-June 2026)** doing exactly this against ~$84k of real traded volume, break-even net of fees on ~6k trades. It is now paused on live capital and runs as a continuous paper simulation (see below).
 
+> 📓 **[LESSONS.md](LESSONS.md)** is the honest post-mortem — the ten specific errors that shaped the code, each linked to the file and line of its fix. Read that if you care about how the bot actually got built.
+
 ## Primary vs secondary agents
 
 Only one agent decides real trades today: **`DEF_COPY`**, the mirror-copy agent. The others are kept as shadows for comparison and are **not** promoted to real capital unless they beat `DEF_COPY` over a long window on the same signals.
