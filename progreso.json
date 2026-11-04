@@ -1,0 +1,1069 @@
+{
+ "actualizado": "2026-11-06T09:08:33+00:00",
+ "ventana": {
+  "inicio": "2026-11-05T09:10:20.432739Z",
+  "fin": "2026-11-06T09:08:33+00:00",
+  "zona": "UTC"
+ },
+ "fuente": "Simulación en papel (BD local del bot). Operaciones del trader detectadas en la cadena de Polygon, con la Data API de respaldo. Entradas al mejor ask del CLOB, salidas al precio de venta del trader; latente al punto medio del CLOB.",
+ "aviso": "Simulación en papel con precios reales de Polymarket. No se arriesga dinero. No es asesoramiento financiero.",
+ "total": {
+  "operaciones": 35,
+  "abiertas": 0,
+  "cerradas": 35,
+  "ganadas": 24,
+  "acierto": 0.6857,
+  "realizado": 10.99,
+  "no_realizado": 0,
+  "comisiones": 1.97,
+  "en_juego": 0,
+  "copiado": 98.73
+ },
+ "traders": [
+  {
+   "nombre": "ZaiZoiBele",
+   "monedero": "0xc23d…82c8",
+   "escala": 0.010635,
+   "perfil": "https://polymarket.com/profile/0xc23dc0eca9e1c2e293de8911b9ac254f0bcd82c8",
+   "criterios": {
+    "sharpe_30d": 11.41,
+    "pnl_30d": 247275.73,
+    "meses_activos_12": 12,
+    "mercados_30d": 431,
+    "ventas_30d": 1272,
+    "merges_30d": 0,
+    "compras_30d": 2324,
+    "proporcion": 47.0,
+    "posicion_mediana": 940.3
+   },
+   "copia": {
+    "operaciones": 0,
+    "abiertas": 0,
+    "cerradas": 0,
+    "ganadas": 0,
+    "acierto": null,
+    "realizado": 0,
+    "no_realizado": 0,
+    "comisiones": 0,
+    "en_juego": 0,
+    "copiado": 0
+   },
+   "seguimos_desde": "2026-11-05T07:19:56+00:00",
+   "trader_opera": {
+    "compras_usdc": 124194.35,
+    "ventas_usdc": 59973.98,
+    "operaciones": 430,
+    "completo": true
+   },
+   "movimientos": [
+    {
+     "t": "2026-11-06T04:53:12+00:00",
+     "tipo": "redeem",
+     "mercado": "Cruzeiro EC vs. EC Bahia: Draw at halftime?",
+     "resultado": "Yes",
+     "usdc": 5352.98,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T04:51:42+00:00",
+     "tipo": "redeem",
+     "mercado": "EC Bahia leading at halftime?",
+     "resultado": "No",
+     "usdc": 5687.97,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T04:51:42+00:00",
+     "tipo": "redeem",
+     "mercado": "EC Bahia leading at halftime?",
+     "resultado": "Yes",
+     "usdc": 0.0,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T04:34:21+00:00",
+     "tipo": "redeem",
+     "mercado": "Will EC Bahia win on 2026-11-05?",
+     "resultado": "No",
+     "usdc": 5043.0,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T04:34:21+00:00",
+     "tipo": "redeem",
+     "mercado": "Will Cruzeiro EC win on 2026-11-05?",
+     "resultado": "Yes",
+     "usdc": 59.86,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T02:48:45+00:00",
+     "tipo": "redeem",
+     "mercado": "Clube do Remo leading at halftime?",
+     "resultado": "No",
+     "usdc": 45.0,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T02:30:09+00:00",
+     "tipo": "redeem",
+     "mercado": "Will Clube do Remo win on 2026-11-05?",
+     "resultado": "No",
+     "usdc": 665.35,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T02:30:07+00:00",
+     "tipo": "redeem",
+     "mercado": "Will SE Palmeiras vs. Clube do Remo end in a draw?",
+     "resultado": "No",
+     "usdc": 73.41,
+     "precio": 0.0
+    }
+   ]
+  },
+  {
+   "nombre": "Hongweiqian",
+   "monedero": "0x462d…ce9b",
+   "escala": 0.003931,
+   "perfil": "https://polymarket.com/profile/0x462d515e957253d2fa79a1f808e6e99eb2eece9b",
+   "criterios": {
+    "sharpe_30d": 4.37,
+    "pnl_30d": 258488.73,
+    "meses_activos_12": 10,
+    "mercados_30d": 224,
+    "ventas_30d": 319,
+    "merges_30d": 0,
+    "compras_30d": 897,
+    "proporcion": 127.2,
+    "posicion_mediana": 2543.61
+   },
+   "copia": {
+    "operaciones": 35,
+    "abiertas": 0,
+    "cerradas": 35,
+    "ganadas": 24,
+    "acierto": 0.6857,
+    "realizado": 10.99,
+    "no_realizado": 0,
+    "comisiones": 1.97,
+    "en_juego": 0,
+    "copiado": 98.73
+   },
+   "seguimos_desde": "2026-11-05T07:19:56+00:00",
+   "trader_opera": {
+    "compras_usdc": 69974.65,
+    "ventas_usdc": 3837.86,
+    "operaciones": 1350,
+    "completo": true
+   },
+   "movimientos": [
+    {
+     "t": "2026-11-06T08:26:07+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 1.76,
+     "precio": 0.1500000085
+    },
+    {
+     "t": "2026-11-06T08:26:04+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 2.42,
+     "precio": 0.15
+    },
+    {
+     "t": "2026-11-06T08:25:55+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 38.53,
+     "precio": 0.15
+    },
+    {
+     "t": "2026-11-06T08:25:34+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 27.5,
+     "precio": 0.15
+    },
+    {
+     "t": "2026-11-06T08:25:21+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 5.25,
+     "precio": 0.15
+    },
+    {
+     "t": "2026-11-06T08:25:06+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 65.47,
+     "precio": 0.1500000002
+    },
+    {
+     "t": "2026-11-06T08:25:06+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 43.75,
+     "precio": 0.1500000002
+    },
+    {
+     "t": "2026-11-06T08:25:04+00:00",
+     "tipo": "buy",
+     "mercado": "Counter-Strike: PARIVISION vs Natus Vincere (BO3) - IEM Beijing Playoffs",
+     "resultado": "Natus Vincere",
+     "usdc": 0.18,
+     "precio": 0.150000085
+    }
+   ]
+  },
+  {
+   "nombre": "Anjun",
+   "monedero": "0x4337…8882",
+   "escala": 0.030075,
+   "perfil": "https://polymarket.com/profile/0x43372356634781eea88d61bbdd7824cdce958882",
+   "criterios": {
+    "sharpe_30d": 4.26,
+    "pnl_30d": 1064868.15,
+    "meses_activos_12": 12,
+    "mercados_30d": 323,
+    "ventas_30d": 657,
+    "merges_30d": 96,
+    "compras_30d": 2927,
+    "proporcion": 16.6,
+    "posicion_mediana": 332.5
+   },
+   "copia": {
+    "operaciones": 0,
+    "abiertas": 0,
+    "cerradas": 0,
+    "ganadas": 0,
+    "acierto": null,
+    "realizado": 0,
+    "no_realizado": 0,
+    "comisiones": 0,
+    "en_juego": 0,
+    "copiado": 0
+   },
+   "seguimos_desde": "2026-11-05T07:19:56+00:00",
+   "trader_opera": {
+    "compras_usdc": 43209.79,
+    "ventas_usdc": 237.36,
+    "operaciones": 39,
+    "completo": true
+   },
+   "movimientos": [
+    {
+     "t": "2026-11-06T06:16:06+00:00",
+     "tipo": "sell",
+     "mercado": "Hantavirus pandemic in 2026?",
+     "resultado": "No",
+     "usdc": 38.65,
+     "precio": 0.984
+    },
+    {
+     "t": "2026-11-06T02:44:57+00:00",
+     "tipo": "sell",
+     "mercado": "Hantavirus pandemic in 2026?",
+     "resultado": "No",
+     "usdc": 55.6,
+     "precio": 0.984
+    },
+    {
+     "t": "2026-11-06T02:35:48+00:00",
+     "tipo": "redeem",
+     "mercado": "Will Dplus KIA win Worlds 2026?",
+     "resultado": "No",
+     "usdc": 2221.99,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T02:35:48+00:00",
+     "tipo": "redeem",
+     "mercado": "Will Dplus KIA win Worlds 2026?",
+     "resultado": "Yes",
+     "usdc": 0.0,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T02:25:45+00:00",
+     "tipo": "buy",
+     "mercado": "LoL: Karmine Corp vs T1 - Game 4 Winner",
+     "resultado": "Karmine Corp",
+     "usdc": 0.24,
+     "precio": 0.37
+    },
+    {
+     "t": "2026-11-06T01:23:25+00:00",
+     "tipo": "redeem",
+     "mercado": "Game Handicap: DK (-1.5) vs Bilibili Gaming (+1.5)",
+     "resultado": "Bilibili Gaming",
+     "usdc": 22028.61,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T01:23:25+00:00",
+     "tipo": "redeem",
+     "mercado": "Games Total: O/U 4.5",
+     "resultado": "Under",
+     "usdc": 2153.99,
+     "precio": 0.0
+    },
+    {
+     "t": "2026-11-06T01:23:24+00:00",
+     "tipo": "redeem",
+     "mercado": "LoL: Dplus KIA vs Bilibili Gaming - Game 3 Winner",
+     "resultado": "Bilibili Gaming",
+     "usdc": 15555.0,
+     "precio": 0.0
+    }
+   ]
+  }
+ ],
+ "recientes": [
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 10:10AM-10:15AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T15:11:34.067608Z",
+   "precio_entrada": 0.16,
+   "importe": 2.78,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T15:14:05.516025Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -2.84,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 10:10AM-10:15AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T15:08:35.566468Z",
+   "precio_entrada": 0.52,
+   "importe": 2.75,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T15:14:05.515823Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -2.81,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 10:00AM-10:05AM ET",
+   "apuesta": "Down",
+   "entrada": "2026-11-05T14:58:02.795664Z",
+   "precio_entrada": 0.5,
+   "importe": 2.81,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T15:03:20.576660Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 2.75,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Mobile Legends Bang Bang: Team Liquid ID vs Bigetron by Vitality (BO5) - MPL Indonesia Playoffs",
+   "apuesta": "Team Liquid ID",
+   "entrada": "2026-11-05T12:14:53.341796Z",
+   "precio_entrada": 0.67,
+   "importe": 3.55,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T14:58:14.158212Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 1.68,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 7:20AM-7:25AM ET",
+   "apuesta": "Down",
+   "entrada": "2026-11-05T12:22:13.519088Z",
+   "precio_entrada": 0.4,
+   "importe": 2.63,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T12:24:44.819873Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.89,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 7:20AM-7:25AM ET",
+   "apuesta": "Down",
+   "entrada": "2026-11-05T12:21:56.588371Z",
+   "precio_entrada": 0.34,
+   "importe": 2.53,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T12:24:44.819772Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 4.86,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 7:15AM-7:20AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T12:17:22.878440Z",
+   "precio_entrada": 0.09,
+   "importe": 8.16,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T12:19:05.242865Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -8.32,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 7:15AM-7:20AM ET",
+   "apuesta": "Down",
+   "entrada": "2026-11-05T12:15:39.536001Z",
+   "precio_entrada": 0.71,
+   "importe": 2.7,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T12:19:05.242840Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 1.05,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 7:15AM-7:20AM ET",
+   "apuesta": "Down",
+   "entrada": "2026-11-05T12:15:18.031204Z",
+   "precio_entrada": 0.44,
+   "importe": 2.65,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T12:19:05.242728Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.32,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 7:15AM-7:20AM ET",
+   "apuesta": "Down",
+   "entrada": "2026-11-05T12:14:36.451703Z",
+   "precio_entrada": 0.49,
+   "importe": 2.64,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T12:18:00.178503Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 2.69,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Counter-Strike: GenOne vs maybe - Map 1 Winner",
+   "apuesta": "GenOne",
+   "entrada": "2026-11-05T09:30:56.470984Z",
+   "precio_entrada": 0.42,
+   "importe": 2.5,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:58:12.105102Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.4,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Counter-Strike: GenOne vs maybe - Map 1 Winner",
+   "apuesta": "GenOne",
+   "entrada": "2026-11-05T09:30:54.409920Z",
+   "precio_entrada": 0.42,
+   "importe": 2.81,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:58:12.105075Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.82,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Counter-Strike: GenOne vs maybe - Map 1 Winner",
+   "apuesta": "GenOne",
+   "entrada": "2026-11-05T09:30:52.028480Z",
+   "precio_entrada": 0.43,
+   "importe": 2.86,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:58:12.105026Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.73,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Counter-Strike: GenOne vs maybe - Map 1 Winner",
+   "apuesta": "GenOne",
+   "entrada": "2026-11-05T09:30:42.069661Z",
+   "precio_entrada": 0.43,
+   "importe": 2.25,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:58:12.104893Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 2.94,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:35AM-4:40AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:35:55.017082Z",
+   "precio_entrada": 0.56,
+   "importe": 2.94,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:39:14.712174Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 2.25,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:30AM-4:35AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:33:28.073010Z",
+   "precio_entrada": 0.25,
+   "importe": 1.0817,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:35:52.264405Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.22,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:30AM-4:35AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:33:14.679919Z",
+   "precio_entrada": 0.24,
+   "importe": 1.1321,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:35:52.264386Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 3.56,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:30AM-4:35AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:33:00.054401Z",
+   "precio_entrada": 0.28,
+   "importe": 0.7807,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:35:52.264283Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 1.99,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:30AM-4:35AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:32:27.909349Z",
+   "precio_entrada": 0.45,
+   "importe": 1.209,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:34:49.269503Z",
+   "precio_salida": 0.7799999987624715,
+   "motivo_salida": "trader_sold",
+   "realizado": 0.86,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:30AM-4:35AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:31:55.192941Z",
+   "precio_entrada": 0.56,
+   "importe": 0.6816,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:34:49.262210Z",
+   "precio_salida": 0.7799999987624715,
+   "motivo_salida": "trader_sold",
+   "realizado": 0.25,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:25AM-4:30AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:27:48.588588Z",
+   "precio_entrada": 0.58,
+   "importe": 6.4764,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:30:16.692679Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -6.61,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:25AM-4:30AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:25:13.347277Z",
+   "precio_entrada": 0.51,
+   "importe": 2.8365,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:30:16.692664Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -2.89,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:25AM-4:30AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:24:43.205328Z",
+   "precio_entrada": 0.5,
+   "importe": 3.1479,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:30:16.692647Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -3.21,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:25AM-4:30AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:24:38.800845Z",
+   "precio_entrada": 0.51,
+   "importe": 2.5665,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:30:16.692569Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -2.62,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:20AM-4:25AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:23:04.746214Z",
+   "precio_entrada": 0.36,
+   "importe": 3.14,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:24:54.813577Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -3.2,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:20AM-4:25AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:21:30.553747Z",
+   "precio_entrada": 0.7,
+   "importe": 3.1921,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:22:14.612339Z",
+   "precio_salida": 0.7799999890579347,
+   "motivo_salida": "trader_sold",
+   "realizado": 0.3,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:20AM-4:25AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:21:26.202643Z",
+   "precio_entrada": 0.69,
+   "importe": 1.5098,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:22:14.602594Z",
+   "precio_salida": 0.7799999890579347,
+   "motivo_salida": "trader_sold",
+   "realizado": 0.17,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:20AM-4:25AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:20:58.283385Z",
+   "precio_entrada": 0.49,
+   "importe": 2.0135,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:22:14.595041Z",
+   "precio_salida": 0.7799999890579347,
+   "motivo_salida": "trader_sold",
+   "realizado": 1.15,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:20AM-4:25AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:20:42.937829Z",
+   "precio_entrada": 0.51,
+   "importe": 1.9381,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:22:14.584874Z",
+   "precio_salida": 0.7799999890579347,
+   "motivo_salida": "trader_sold",
+   "realizado": 0.99,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:15AM-4:20AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:19:35.064694Z",
+   "precio_entrada": 0.63,
+   "importe": 3.42,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:21:30.964087Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 1.94,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:15AM-4:20AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:19:14.166227Z",
+   "precio_entrada": 0.68,
+   "importe": 3.6,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:21:30.963902Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 1.62,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:15AM-4:20AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:18:56.804277Z",
+   "precio_entrada": 0.72,
+   "importe": 3.41,
+   "estado": "tp_hit",
+   "salida": "2026-11-05T09:21:30.962124Z",
+   "precio_salida": 1.0,
+   "motivo_salida": "market_resolved",
+   "realizado": 1.26,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:10AM-4:15AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:10:25.150958Z",
+   "precio_entrada": 0.5,
+   "importe": 3.14,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:15:31.768704Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -3.2,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:10AM-4:15AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:10:22.675653Z",
+   "precio_entrada": 0.5,
+   "importe": 4.14,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:15:31.768673Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -4.22,
+   "no_realizado": 0.0
+  },
+  {
+   "trader": "Hongweiqian",
+   "mercado": "Bitcoin Up or Down - November 5, 4:10AM-4:15AM ET",
+   "apuesta": "Up",
+   "entrada": "2026-11-05T09:10:20.432739Z",
+   "precio_entrada": 0.5,
+   "importe": 2.75,
+   "estado": "sl_hit",
+   "salida": "2026-11-05T09:15:31.768543Z",
+   "precio_salida": 0.0,
+   "motivo_salida": "market_resolved",
+   "realizado": -2.81,
+   "no_realizado": 0.0
+  }
+ ],
+ "puntos": [
+  [
+   0.5,
+   2.75,
+   "2026-11-05T09:10:20.432739Z",
+   -2.81,
+   "Hongweiqian"
+  ],
+  [
+   0.5,
+   4.14,
+   "2026-11-05T09:10:22.675653Z",
+   -4.22,
+   "Hongweiqian"
+  ],
+  [
+   0.5,
+   3.14,
+   "2026-11-05T09:10:25.150958Z",
+   -3.2,
+   "Hongweiqian"
+  ],
+  [
+   0.72,
+   3.41,
+   "2026-11-05T09:18:56.804277Z",
+   1.26,
+   "Hongweiqian"
+  ],
+  [
+   0.68,
+   3.6,
+   "2026-11-05T09:19:14.166227Z",
+   1.62,
+   "Hongweiqian"
+  ],
+  [
+   0.63,
+   3.42,
+   "2026-11-05T09:19:35.064694Z",
+   1.94,
+   "Hongweiqian"
+  ],
+  [
+   0.51,
+   1.9381,
+   "2026-11-05T09:20:42.937829Z",
+   0.99,
+   "Hongweiqian"
+  ],
+  [
+   0.49,
+   2.0135,
+   "2026-11-05T09:20:58.283385Z",
+   1.15,
+   "Hongweiqian"
+  ],
+  [
+   0.69,
+   1.5098,
+   "2026-11-05T09:21:26.202643Z",
+   0.17,
+   "Hongweiqian"
+  ],
+  [
+   0.7,
+   3.1921,
+   "2026-11-05T09:21:30.553747Z",
+   0.3,
+   "Hongweiqian"
+  ],
+  [
+   0.36,
+   3.14,
+   "2026-11-05T09:23:04.746214Z",
+   -3.2,
+   "Hongweiqian"
+  ],
+  [
+   0.51,
+   2.5665,
+   "2026-11-05T09:24:38.800845Z",
+   -2.62,
+   "Hongweiqian"
+  ],
+  [
+   0.5,
+   3.1479,
+   "2026-11-05T09:24:43.205328Z",
+   -3.21,
+   "Hongweiqian"
+  ],
+  [
+   0.51,
+   2.8365,
+   "2026-11-05T09:25:13.347277Z",
+   -2.89,
+   "Hongweiqian"
+  ],
+  [
+   0.58,
+   6.4764,
+   "2026-11-05T09:27:48.588588Z",
+   -6.61,
+   "Hongweiqian"
+  ],
+  [
+   0.43,
+   2.25,
+   "2026-11-05T09:30:42.069661Z",
+   2.94,
+   "Hongweiqian"
+  ],
+  [
+   0.43,
+   2.86,
+   "2026-11-05T09:30:52.028480Z",
+   3.73,
+   "Hongweiqian"
+  ],
+  [
+   0.42,
+   2.81,
+   "2026-11-05T09:30:54.409920Z",
+   3.82,
+   "Hongweiqian"
+  ],
+  [
+   0.42,
+   2.5,
+   "2026-11-05T09:30:56.470984Z",
+   3.4,
+   "Hongweiqian"
+  ],
+  [
+   0.56,
+   0.6816,
+   "2026-11-05T09:31:55.192941Z",
+   0.25,
+   "Hongweiqian"
+  ],
+  [
+   0.45,
+   1.209,
+   "2026-11-05T09:32:27.909349Z",
+   0.86,
+   "Hongweiqian"
+  ],
+  [
+   0.28,
+   0.7807,
+   "2026-11-05T09:33:00.054401Z",
+   1.99,
+   "Hongweiqian"
+  ],
+  [
+   0.24,
+   1.1321,
+   "2026-11-05T09:33:14.679919Z",
+   3.56,
+   "Hongweiqian"
+  ],
+  [
+   0.25,
+   1.0817,
+   "2026-11-05T09:33:28.073010Z",
+   3.22,
+   "Hongweiqian"
+  ],
+  [
+   0.56,
+   2.94,
+   "2026-11-05T09:35:55.017082Z",
+   2.25,
+   "Hongweiqian"
+  ],
+  [
+   0.49,
+   2.64,
+   "2026-11-05T12:14:36.451703Z",
+   2.69,
+   "Hongweiqian"
+  ],
+  [
+   0.67,
+   3.55,
+   "2026-11-05T12:14:53.341796Z",
+   1.68,
+   "Hongweiqian"
+  ],
+  [
+   0.44,
+   2.65,
+   "2026-11-05T12:15:18.031204Z",
+   3.32,
+   "Hongweiqian"
+  ],
+  [
+   0.71,
+   2.7,
+   "2026-11-05T12:15:39.536001Z",
+   1.05,
+   "Hongweiqian"
+  ],
+  [
+   0.09,
+   8.16,
+   "2026-11-05T12:17:22.878440Z",
+   -8.32,
+   "Hongweiqian"
+  ],
+  [
+   0.34,
+   2.53,
+   "2026-11-05T12:21:56.588371Z",
+   4.86,
+   "Hongweiqian"
+  ],
+  [
+   0.4,
+   2.63,
+   "2026-11-05T12:22:13.519088Z",
+   3.89,
+   "Hongweiqian"
+  ],
+  [
+   0.5,
+   2.81,
+   "2026-11-05T14:58:02.795664Z",
+   2.75,
+   "Hongweiqian"
+  ],
+  [
+   0.52,
+   2.75,
+   "2026-11-05T15:08:35.566468Z",
+   -2.81,
+   "Hongweiqian"
+  ],
+  [
+   0.16,
+   2.78,
+   "2026-11-05T15:11:34.067608Z",
+   -2.84,
+   "Hongweiqian"
+  ]
+ ]
+}
