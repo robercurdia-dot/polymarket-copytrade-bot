@@ -24,6 +24,7 @@ import paper_executor
 import auto_tuner
 import safety
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler
+import data_api
 
 # ── Dashboard HTTP server ─────────────────────────────────────────────────────
 WEB_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
@@ -120,6 +121,12 @@ async def run_telegram_bot(stop_event):
         await stop_event.wait()
         return
     _telegram_started = True
+
+    if not config.TELEGRAM_BOT_TOKEN:
+        print("[TELEGRAM] sin TELEGRAM_BOT_TOKEN: comandos de Telegram desactivados")
+        await stop_event.wait()
+        _telegram_started = False
+        return
 
     app = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CallbackQueryHandler(telegram_bot.handle_callback))
@@ -608,7 +615,7 @@ def _take_daily_snapshot():
 
     _redeem = 0.0
     try:
-        _pos = _req.get(
+        _pos = data_api.get(
             f"https://data-api.polymarket.com/positions?user={config.DEPOSIT_WALLET_ADDRESS}&sizeThreshold=.01",
             timeout=15).json() or []
         _redeem = sum(float(p.get('currentValue', 0) or 0)

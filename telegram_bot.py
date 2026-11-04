@@ -37,6 +37,7 @@ async def send_with_retry(coro_or_fn, max_retries=3):
                 return None
 
 import re as _re
+import data_api
 
 _POLITICAL_TERMS_VS = {
     "trump", "biden", "russia", "ukraine", "china", "iran", "israel",
@@ -98,7 +99,14 @@ def _save_trade_feedback(trade_id, action):
     except Exception as e:
         print(f"Error guardando feedback: {e}")
 
-bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
+class _BotSinTelegram:
+    """Sin TELEGRAM_BOT_TOKEN (p. ej. en la simulación): los avisos van al log en vez de a Telegram."""
+
+    async def send_message(self, chat_id=None, text="", **kw):
+        print(f"[TELEGRAM-OFF] {str(text)[:300]}")
+
+
+bot = Bot(token=config.TELEGRAM_BOT_TOKEN) if config.TELEGRAM_BOT_TOKEN else _BotSinTelegram()
 
 SIDE_EMOJI = {"BUY": "🟢", "SELL": "🔴", "YES": "🟢", "NO": "🔴"}
 
@@ -458,7 +466,7 @@ async def handle_callback(update, context):
                 try:
                     if wallet_addr and market_id:
                         import requests as _rq
-                        r = _rq.get(
+                        r = data_api.get(
                             "https://data-api.polymarket.com/positions",
                             params={"user": wallet_addr, "limit": 500},
                             timeout=10,

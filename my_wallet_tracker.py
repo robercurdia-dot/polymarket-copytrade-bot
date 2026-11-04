@@ -15,6 +15,7 @@ from datetime import datetime
 from collections import defaultdict
 
 import config
+import data_api
 
 _DATA_API     = "https://data-api.polymarket.com"
 _GAMMA_API    = "https://gamma-api.polymarket.com"
@@ -60,7 +61,7 @@ def _fetch_positions(status: str = "OPEN", limit: int = 500) -> list:
         if status == "CLOSED":
             params["redeemed"] = "true"
 
-        r = requests.get(
+        r = data_api.get(
             f"{_DATA_API}/positions",
             params=params,
             timeout=_TIMEOUT,
@@ -143,7 +144,7 @@ def _fetch_activity(limit_total: int = 2000, page_size: int = 500) -> list:
     offset = 0
     while len(events) < limit_total:
         try:
-            r = requests.get(
+            r = data_api.get(
                 f"{_DATA_API}/activity",
                 params={
                     "user":   WALLET,

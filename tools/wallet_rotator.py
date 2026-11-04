@@ -30,7 +30,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 import leaderboard_analyzer as la
 
-DB = "polymarket_insider.db"
+DB = os.getenv("POLY_DB_PATH", "polymarket_insider.db")
 REPORTS_DIR = Path("reports")
 REPORTS_DIR.mkdir(exist_ok=True)
 

@@ -29,6 +29,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from datetime import datetime, timezone, timedelta
 import database
+import data_api
 
 DEF_WALLETS = {
     '0x204f72f35326db932158cba6adff0b9a1da95e14': 'Swisstony',
@@ -52,7 +53,7 @@ def _fetch_exits(addr: str, cutoff_ts: int) -> dict:
     last_err = None
     for _attempt in range(3):
         try:
-            resp = requests.get('https://data-api.polymarket.com/activity',
+            resp = data_api.get('https://data-api.polymarket.com/activity',
                 params={'user': addr, 'limit': 300}, timeout=12, verify=False)
             if resp.status_code != 200:
                 print(f"[COPY_WATCHER] activity API {resp.status_code} para {addr[:10]}")

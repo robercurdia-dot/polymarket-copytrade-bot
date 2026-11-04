@@ -24,6 +24,7 @@ from datetime import datetime, timedelta, timezone
 import config
 import database
 import telegram_bot
+import data_api
 
 DATA_URL  = "https://data-api.polymarket.com"
 
@@ -79,7 +80,7 @@ def fetch_top_pnl_traders(limit: int = LEADERBOARD_LIMIT) -> list:
                 url = (DATA_URL + "/v1/leaderboard"
                        + f"?timePeriod={period}&orderBy=PNL"
                        + f"&limit=50&offset={offset}&category=overall")
-                r = requests.get(url, timeout=15)
+                r = data_api.get(url, timeout=15)
                 if r.status_code != 200:
                     break
                 data = r.json()
@@ -114,7 +115,7 @@ def _fetch_positions_unbiased(wallet: str) -> list:
     seen, result = set(), []
     for direction in ("desc", "asc"):
         try:
-            r = requests.get(
+            r = data_api.get(
                 DATA_URL + "/positions?user=" + wallet
                 + "&limit=500&sortBy=CASHPNL&sortDirection=" + direction,
                 timeout=20,

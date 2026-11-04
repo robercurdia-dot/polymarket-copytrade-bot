@@ -46,6 +46,7 @@ import my_behavior_analyzer
 import paper_executor
 import auto_tuner
 import config
+import data_api
 
 # ── Path del JSON de salida ────────────────────────────────────────────────────
 _BASE = os.path.dirname(os.path.abspath(__file__))
@@ -194,7 +195,7 @@ def _build_real_copy_block():
             _lde(dotenv_path=_P(__file__).resolve().parent / ".env", override=True)
             funder = os.environ.get("POLY_FUNDER_ADDRESS", "").strip()
             if funder and open_trades:
-                resp = _rq.get(
+                resp = data_api.get(
                     f"https://data-api.polymarket.com/positions",
                     params={"user": funder, "limit": 500}, timeout=8)
                 pm_positions = {}  # asset_id → {curPrice, size}
@@ -280,7 +281,7 @@ def _build_real_trading_block(my_wallet_data=None, agent_id='B'):
     import requests as _rq_l46
     _pm_position_value = {}  # token_id → currentValue Polymarket
     try:
-        _r46 = _rq_l46.get(
+        _r46 = data_api.get(
             f"https://data-api.polymarket.com/positions?user={config.DEPOSIT_WALLET_ADDRESS}&limit=500",
             timeout=8)
         for _p in _r46.json() or []:
@@ -623,7 +624,7 @@ def _build_real_trading_block(my_wallet_data=None, agent_id='B'):
         _pm_sz_all = {}   # token_id → shares (para lag de resolución)
         for _addr in (_dw, _proxy):
             try:
-                _r = _rq.get(f"https://data-api.polymarket.com/positions?user={_addr}&limit=500", timeout=8)
+                _r = data_api.get(f"https://data-api.polymarket.com/positions?user={_addr}&limit=500", timeout=8)
                 for _p in _r.json() or []:
                     _t = _p.get('asset')
                     _cv = float(_p.get('currentValue', 0) or 0)
@@ -1923,7 +1924,7 @@ def export_data():
                 if not _addr:
                     continue
                 try:
-                    _r = requests.get(
+                    _r = data_api.get(
                         f'https://data-api.polymarket.com/positions'
                         f'?user={_addr}&limit=500&sizeThreshold=0.01',
                         timeout=10)
@@ -1959,7 +1960,7 @@ def export_data():
                           _os_mod.getenv('POLY_WALLET_ADDRESS')):
                 if not _addr: continue
                 try:
-                    _r = requests.get(
+                    _r = data_api.get(
                         f'https://data-api.polymarket.com/positions'
                         f'?user={_addr}&limit=500&sizeThreshold=0.01',
                         timeout=10)

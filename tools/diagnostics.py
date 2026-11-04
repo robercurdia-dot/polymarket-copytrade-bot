@@ -21,6 +21,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import data_api
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
@@ -48,7 +49,7 @@ def _fetch_polymarket_buys(wallet: str, hours: int = 24) -> list:
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).timestamp()
     for offset in range(0, 2000, 500):
         try:
-            r = requests.get("https://data-api.polymarket.com/activity",
+            r = data_api.get("https://data-api.polymarket.com/activity",
                              params={"user": wallet, "limit": 500, "offset": offset},
                              timeout=10)
             if r.status_code != 200:
@@ -212,7 +213,7 @@ def check_redeem_vs_trade_balance(hours: int = 24, min_trades_per_5_redeems: int
     con = sqlite3.connect(DB_PATH)
     for wallet in wl:
         try:
-            r = requests.get("https://data-api.polymarket.com/activity",
+            r = data_api.get("https://data-api.polymarket.com/activity",
                              params={"user": wallet, "limit": 100}, timeout=10).json() or []
             redeems = sum(1 for a in r if a.get("type") == "REDEEM"
                           and int(a.get("timestamp", 0)) >= cutoff_ts)
@@ -378,7 +379,7 @@ def check_equity_consistency() -> dict:
         w3 = Web3(Web3.HTTPProvider("https://polygon-bor-rpc.publicnode.com", request_kwargs={"timeout":5}))
         abi = [{"name":"balanceOf","type":"function","inputs":[{"name":"o","type":"address"}],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}]
         bal_pusd = w3.eth.contract(address=Web3.to_checksum_address(PUSD), abi=abi).functions.balanceOf(Web3.to_checksum_address(DW)).call()/1e6
-        r = requests.get(f"https://data-api.polymarket.com/positions?user={DW}&limit=500", timeout=8)
+        r = data_api.get(f"https://data-api.polymarket.com/positions?user={DW}&limit=500", timeout=8)
         pm_val = sum(float(p.get('currentValue',0) or 0) for p in r.json() or [])
         real_eq = bal_pusd + pm_val
         diff = abs(real_eq - dash_eq)

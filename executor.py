@@ -35,6 +35,7 @@ from dotenv import load_dotenv, set_key
 import config
 import database
 import risk_manager
+import data_api
 
 _ENV_PATH = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=_ENV_PATH)
@@ -1151,7 +1152,7 @@ def _close_via_activity_log(bt_id: int, market_id: str, token_id: str,
     try:
         url = (f"https://data-api.polymarket.com/activity?user={dw.lower()}"
                f"&market={market_id}&limit=20")
-        acts = _rq.get(url, timeout=8).json() or []
+        acts = data_api.get(url, timeout=8).json() or []
     except Exception as _e:
         print(f"[RECONCILE] _close_via_activity_log activity_api_error bt={bt_id}: {_e}")
         return False

@@ -20,6 +20,7 @@ from collections import defaultdict
 
 import config
 import database
+import data_api
 
 _DATA_API = "https://data-api.polymarket.com"
 _TIMEOUT  = 15
@@ -28,7 +29,7 @@ _TIMEOUT  = 15
 def _fetch_whale_positions(wallet: str) -> list:
     """Devuelve las posiciones abiertas de una wallet (ballena)."""
     try:
-        r = requests.get(
+        r = data_api.get(
             f"{_DATA_API}/positions",
             params={"user": wallet, "limit": 500, "sortBy": "CURRENT", "sortDirection": "DESC"},
             timeout=_TIMEOUT,

@@ -67,6 +67,7 @@ def is_crypto_short_term(question, end_date):
     return False
 
 import re as _re
+import data_api
 
 _POLITICAL_TERMS_VS = {
     "trump", "biden", "russia", "ukraine", "china", "iran", "israel",
@@ -174,7 +175,7 @@ def get_recent_activity(wallet, limit=5, offset=0):
         api_limit = max(limit * 8, 30)
         url = (f"{DATA_URL}/activity?user={wallet}"
                f"&limit={api_limit}&offset={offset}")
-        r = requests.get(url, timeout=10)
+        r = data_api.get(url, timeout=10)
         if r.status_code != 200:
             return []
         data = r.json() or []

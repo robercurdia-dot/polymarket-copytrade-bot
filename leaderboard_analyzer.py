@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta, timezone
 import database
 import config
+import data_api
 
 DATA_URL = "https://data-api.polymarket.com"
 
@@ -127,7 +128,7 @@ def get_leaderboard(limit=200):
     offset = 0
     while offset < limit:
         try:
-            r = requests.get(DATA_URL + "/v1/leaderboard?timePeriod=month&orderBy=PNL&limit=50&offset=" + str(offset) + "&category=overall", timeout=15)
+            r = data_api.get(DATA_URL + "/v1/leaderboard?timePeriod=month&orderBy=PNL&limit=50&offset=" + str(offset) + "&category=overall", timeout=15)
             data = r.json()
             if not data:
                 break
@@ -197,26 +198,29 @@ def _parse_dt(raw):
         return None
 
 def _is_closed(p, now):
-    """Devuelve True si la posición está cerrada (redeemable o endDate pasado)."""
-    if bool(p.get("redeemable", False)):
+    """Devuelve True si la posición está cerrada (vendida, redeemable o endDate pasado)."""
+    if p.get("status") == "CLOSED" or bool(p.get("redeemable", False)):
         return True
     end_dt = _parse_dt(p.get("endDate") or p.get("endDateIso") or "")
     return end_dt is not None and end_dt < now
 
-def _fetch_positions_unbiased(wallet: str, max_positions: int = 1000) -> list:
+def _fetch_positions_unbiased(wallet: str, max_positions: int = 2000) -> list:
     """
     Obtiene posiciones SIN sesgo de selección.
     Combina el extremo superior (mejor PnL) y el inferior (peor PnL) para
     cubrir el máximo rango posible con las 500 + 500 peticiones permitidas.
     Desduplicamos por (conditionId, outcome, asset).
+    Data API v2: las posiciones ya vendidas o cobradas (casi todas las ganadoras) solo salen con
+    status=CLOSED; sin ellas el win rate solo vería perdedoras. Se piden primero.
     """
     seen, result = set(), []
 
-    for direction in ("desc", "asc"):
+    consultas = ["&limit=1000&status=CLOSED"] + [
+        "&limit=500&sortBy=CASHPNL&sortDirection=" + d for d in ("desc", "asc")]
+    for consulta in consultas:
         try:
-            r = requests.get(
-                DATA_URL + "/positions?user=" + wallet
-                + "&limit=500&sortBy=CASHPNL&sortDirection=" + direction,
+            r = data_api.get(
+                DATA_URL + "/positions?user=" + wallet + consulta,
                 timeout=20,
             )
             if r.status_code != 200:
@@ -225,7 +229,7 @@ def _fetch_positions_unbiased(wallet: str, max_positions: int = 1000) -> list:
             if not isinstance(raw, list):
                 continue
         except Exception as e:
-            print(f"  [positions_unbiased] error {wallet[:10]} {direction}: {e}")
+            print(f"  [positions_unbiased] error {wallet[:10]} {consulta}: {e}")
             continue
 
         for p in raw:

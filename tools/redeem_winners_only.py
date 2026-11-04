@@ -6,6 +6,7 @@ o que no son neg-risk.
 import json, os, sys, time, requests
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import data_api
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -20,7 +21,7 @@ from eth_account import Account
 DW = config.DEPOSIT_WALLET_ADDRESS.lower()
 
 # 1. Sacar de la API los conditionIds con valor > 0
-pos = requests.get('https://data-api.polymarket.com/positions',
+pos = data_api.get('https://data-api.polymarket.com/positions',
     params={'user': DW, 'limit': 500, 'sizeThreshold': 0}, timeout=10).json() or []
 winners = {(p.get('conditionId') or '').lower()
            for p in pos

@@ -32,6 +32,7 @@ from web3 import Web3
 
 import config
 import database
+import data_api
 
 
 # ── Constantes Polymarket Polygon ─────────────────────────────────────
@@ -295,7 +296,7 @@ def phantom_open_positions() -> list:
             url = (f"https://data-api.polymarket.com/activity?"
                    f"user={config.DEPOSIT_WALLET_ADDRESS.lower()}"
                    f"&market={market_id}&limit=20")
-            acts = _rq.get(url, timeout=6).json() or []
+            acts = data_api.get(url, timeout=6).json() or []
             for a in acts:
                 if (a.get("type") == "TRADE" and
                     str(a.get("side", "")).upper() == "SELL"):

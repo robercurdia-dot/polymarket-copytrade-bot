@@ -18,6 +18,7 @@ import requests
 from datetime import datetime, timezone, timedelta
 
 from leaderboard_analyzer import _fetch_positions_unbiased, _is_closed, _parse_dt
+import data_api
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ def fetch_leaderboard_category(category: str, limit: int = 300) -> list:
 
     while len(traders) < limit:
         try:
-            r = requests.get(
+            r = data_api.get(
                 DATA_URL + "/v1/leaderboard"
                 + f"?timePeriod=all&orderBy=PNL&limit={page}&offset={offset}&category={category}",
                 timeout=15,
@@ -112,7 +113,7 @@ def pull_all_candidates() -> list:
 def has_recent_activity(wallet: str, days: int = MIN_RECENT_ACTIVITY) -> bool:
     """True si el trader tiene al menos 1 trade en los últimos `days` días."""
     try:
-        r = requests.get(
+        r = data_api.get(
             DATA_URL + f"/activity?user={wallet}&limit=5",
             timeout=8,
         )

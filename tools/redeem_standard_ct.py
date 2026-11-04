@@ -6,6 +6,7 @@ conditionId, indexSets) via batch WALLET.
 import json, os, sys, time, requests
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import data_api
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -24,7 +25,7 @@ DW = Web3.to_checksum_address(config.DEPOSIT_WALLET_ADDRESS)
 w3 = Web3(Web3.HTTPProvider(RPC))
 
 # 1. Sacar mercados standard con valor on-chain
-pos = requests.get('https://data-api.polymarket.com/positions',
+pos = data_api.get('https://data-api.polymarket.com/positions',
     params={'user': str(DW).lower(), 'limit': 500, 'sizeThreshold': 0},
     timeout=10).json() or []
 

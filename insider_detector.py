@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta
 import database
 import config
+import data_api
 
 GAMMA_URL = 'https://gamma-api.polymarket.com'
 DATA_URL = 'https://data-api.polymarket.com'
@@ -41,7 +42,7 @@ def get_political_markets(limit=300):
 
 def get_top_holders(condition_id):
     try:
-        r = requests.get(DATA_URL + '/holders?market=' + condition_id + '&limit=20', timeout=10)
+        r = data_api.get(DATA_URL + '/holders?market=' + condition_id + '&limit=20', timeout=10)
         if r.status_code == 200:
             data = r.json()
             wallets = []
@@ -57,7 +58,7 @@ def get_top_holders(condition_id):
 
 def get_wallet_history(wallet_address):
     try:
-        r = requests.get(DATA_URL + '/activity?user=' + wallet_address + '&limit=50', timeout=10)
+        r = data_api.get(DATA_URL + '/activity?user=' + wallet_address + '&limit=50', timeout=10)
         return r.json() if r.status_code == 200 else []
     except Exception as e:
         print('Error wallet history: ' + str(e))

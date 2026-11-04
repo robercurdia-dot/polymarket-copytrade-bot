@@ -27,6 +27,7 @@ import telegram_bot
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from leaderboard_analyzer import NICHE_KEYWORDS
 from trade_evaluator import evaluate_trade, format_evaluation_for_telegram, MIN_CONFIDENCE
+import data_api
 
 SCAN_INTERVAL  = 20 * 60   # segundos entre escaneos
 TOP_PER_TRADER = 10        # máximo alertas individuales por trader por ciclo
@@ -272,7 +273,7 @@ def _is_hedged(pos: dict, all_wallet_positions: list) -> bool:
 def fetch_open_positions(wallet: str, min_size: float) -> list:
     """Todas las posiciones abiertas válidas (sin cap de 10 — el ranking va después)."""
     try:
-        r = requests.get(DATA_URL + "/positions?user=" + wallet
+        r = data_api.get(DATA_URL + "/positions?user=" + wallet
                          + "&limit=500", timeout=20)
         if r.status_code != 200: return []
         raw = r.json()
@@ -763,7 +764,7 @@ async def trusted_scan_loop():
                     w = ht["wallet"]
                     # Obtener pocas posiciones solo para log (no alerta completa)
                     try:
-                        r = requests.get(DATA_URL + "/positions?user=" + w + "&limit=10", timeout=10)
+                        r = data_api.get(DATA_URL + "/positions?user=" + w + "&limit=10", timeout=10)
                         n_open = len([p for p in (r.json() if r.status_code == 200 else [])
                                       if not bool(p.get("redeemable", False))]) if r.status_code == 200 else "?"
                     except Exception:

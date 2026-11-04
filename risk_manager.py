@@ -147,6 +147,7 @@ def get_status():
 
 import json
 from datetime import datetime, timedelta
+import data_api
 
 # In-memory tracker de errores API (reseteo por reinicio del bot, OK porque
 # el contador es de "última hora" y los persistentes pueden saturar la BD).
@@ -278,14 +279,14 @@ def _check_low_balance() -> tuple[bool, dict | None]:
         import requests
         # Chequear DW (donde vive el pUSD libre) + proxy como fallback
         addr = getattr(config, 'DEPOSIT_WALLET_ADDRESS', None) or config.POLY_WALLET_ADDRESS
-        r = requests.get(f"https://data-api.polymarket.com/value?user={addr}",
+        r = data_api.get(f"https://data-api.polymarket.com/value?user={addr}",
                          timeout=5)
         balance = float(r.json()[0].get("value", 0)) if r.status_code == 200 else None
         # Si DW no tiene posiciones abiertas (solo pUSD libre), la API devuelve 0.
         # En ese caso usar el balance CLOB como alternativa.
         if balance is not None and balance == 0:
             try:
-                r2 = requests.get(f"https://data-api.polymarket.com/value?user={config.POLY_WALLET_ADDRESS}",
+                r2 = data_api.get(f"https://data-api.polymarket.com/value?user={config.POLY_WALLET_ADDRESS}",
                                    timeout=5)
                 proxy_bal = float(r2.json()[0].get("value", 0)) if r2.status_code == 200 else 0
                 balance = max(balance, proxy_bal)
@@ -467,7 +468,7 @@ def get_dashboard_state() -> dict:
     balance = None
     try:
         import requests
-        r = requests.get(f"https://data-api.polymarket.com/value?user={config.POLY_WALLET_ADDRESS}",
+        r = data_api.get(f"https://data-api.polymarket.com/value?user={config.POLY_WALLET_ADDRESS}",
                          timeout=5)
         if r.status_code == 200:
             balance = float(r.json()[0].get("value", 0))

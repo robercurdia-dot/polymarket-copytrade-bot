@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 import database
+import data_api
 
 database.init_db()
 
@@ -10,7 +11,7 @@ total_saved = 0
 for cat in categories:
     traders = []
     for offset in [0, 50, 100]:
-        r = requests.get('https://data-api.polymarket.com/v1/leaderboard?timePeriod=month&orderBy=PNL&limit=50&offset=' + str(offset) + '&category=' + cat, timeout=10)
+        r = data_api.get('https://data-api.polymarket.com/v1/leaderboard?timePeriod=month&orderBy=PNL&limit=50&offset=' + str(offset) + '&category=' + cat, timeout=10)
         data = r.json()
         if not data:
             break
