@@ -332,6 +332,14 @@ def init_db():
          None, None, 30 * 86400, 1, 1),
         ("A_legacy", "Legacy pre-2.6",  "Histórico anterior al experimento. Oculto en dashboard.",
          None, None, 0, 0, 1),
+        # Copia pura (README «Primary vs secondary agents»): entra y sale cuando entra y sale el trader.
+        # Se crean inactivos para no cambiar bases de datos existentes; PAPER_AGENTES decide cuáles corren.
+        ("DEF_COPY", "Copia",           "Entra y sale cuando entra y sale el trader, a escala",
+         None, None, 30 * 86400, 0, 1),
+        ("DEF_TP",   "Base TP/SL",      "Entradas del trader con objetivo 1.7x y stop 0.5x propios",
+         1.7, 0.5, 30 * 86400, 0, 1),
+        ("DEF_HOLD", "Base resolución", "Entradas del trader, sin salir hasta que el mercado resuelve",
+         None, None, 30 * 86400, 0, 1),
     ]
     for ag in AGENTS_SEED:
         c.execute("SELECT id FROM agents WHERE id=?", (ag[0],))
@@ -340,6 +348,12 @@ def init_db():
                 (id, name, description, tp_multiplier, sl_multiplier,
                  timeout_seconds, active, config_frozen, created_at)
                 VALUES (?,?,?,?,?,?,?,?,?)""", ag + (_seed_at,))
+
+    # PAPER_AGENTES=DEF_COPY,DEF_TP,... activa exactamente esos agentes y desactiva el resto.
+    _activos = [a.strip() for a in (os.getenv("PAPER_AGENTES", "") or "").split(",") if a.strip()]
+    if _activos:
+        c.execute(f"UPDATE agents SET active = CASE WHEN id IN ({','.join('?' * len(_activos))}) THEN 1 ELSE 0 END",
+                  _activos)
 
     # Migración paper_trades: añadir agent_id + timeout_seconds (snapshot)
     _existing_pt_cols = {r[1] for r in c.execute("PRAGMA table_info(paper_trades)")}

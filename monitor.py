@@ -68,6 +68,7 @@ def is_crypto_short_term(question, end_date):
 
 import re as _re
 import data_api
+import copy_wallets
 
 _POLITICAL_TERMS_VS = {
     "trump", "biden", "russia", "ukraine", "china", "iran", "israel",
@@ -239,10 +240,7 @@ def passes_hard_filters(trade, insider_stats, end_date=None):
     # Precio near-0 o near-1 con fecha aún activa: mercado sin valor (retorno insignificante)
     # DEF_COPY wallets bypass: Swisstony opera "No" bets a 0.97-0.99 con edge probado
     _wallet_addr_hf = (trade.get("proxyWallet") or trade.get("user") or "").lower()
-    _def_copy_wallets_hf = {
-        '0x204f72f35326db932158cba6adff0b9a1da95e14',
-        '0x84dbb7103982e3617704a2ed7d5b39691952aeeb',
-    }
+    _def_copy_wallets_hf = set(copy_wallets.todos())
     if _wallet_addr_hf not in _def_copy_wallets_hf:
         if price <= 0.02 or price >= 0.98:
             return False, "SIN_VALOR"
@@ -254,12 +252,7 @@ def passes_hard_filters(trade, insider_stats, end_date=None):
     wallet_addr = (trade.get("proxyWallet") or trade.get("user") or "").lower()
 
     # Wallets DEF_COPY: bypass completo del filtro de tamaño
-    DEF_COPY_WALLETS = {
-        '0x204f72f35326db932158cba6adff0b9a1da95e14',  # Swisstony
-        '0x84dbb7103982e3617704a2ed7d5b39691952aeeb',  # Soarin22
-        '0xc96e5287ab294ac0388c2ddb00180fc464cff1f9',  # wigglew
-        '0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f',  # kinderSman
-    }
+    DEF_COPY_WALLETS = set(copy_wallets.todos())
     if wallet_addr in DEF_COPY_WALLETS:
         min_size = 1  # DEF_COPY paper_executor decide con su propio umbral $50
 
@@ -287,7 +280,8 @@ def passes_hard_filters(trade, insider_stats, end_date=None):
         return False, "SIZE_PEQUENO"
     # Detectar nicho del trade y descartar los IGNORED
     niche = get_question_niche(question)
-    if niche in IGNORED_NICHES:
+    # Los monederos de copia se replican tal cual, también fuera de los nichos habituales.
+    if niche in IGNORED_NICHES and wallet_addr not in DEF_COPY_WALLETS:
         return False, f"NICHE_IGNORED ({niche})"
 
     # L81: eliminado scan PRIORITY_KEYWORDS para nivel CRITICO/ALTO/MEDIO.
@@ -458,6 +452,9 @@ async def process_new_trade(wallet, trade, insider_stats):
     if not market_id:
         print(f"[MONITOR] trade sin conditionId/asset — skip {trade.get('transactionHash','')[:16]}")
         return
+    # Las ventas de los monederos de copia no son entradas: las replica definitive_copy_watcher.
+    if str(side).upper() == "SELL" and (wallet or "").lower() in copy_wallets.todos():
+        return
     slug = trade.get("slug", "")
     outcome_name = trade.get("outcome", side)
     end_date = get_market_end_date(slug) if slug else None
@@ -465,12 +462,7 @@ async def process_new_trade(wallet, trade, insider_stats):
     # --- Deduplicación y detección de cobertura (mismo mercado) ---
     is_duplicate, total_size, hedge_status = update_market_cache(wallet, market_id, side, size, question)
 
-    DEF_COPY_WALLETS = {
-        '0x204f72f35326db932158cba6adff0b9a1da95e14',  # Swisstony
-        '0x84dbb7103982e3617704a2ed7d5b39691952aeeb',  # Soarin22
-        '0xc96e5287ab294ac0388c2ddb00180fc464cff1f9',  # wigglew
-        '0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f',  # kinderSman
-    }
+    DEF_COPY_WALLETS = set(copy_wallets.todos())
     _is_def_wallet = (wallet or '').lower() in DEF_COPY_WALLETS
     if is_duplicate:
         if not _is_def_wallet:
@@ -487,12 +479,7 @@ async def process_new_trade(wallet, trade, insider_stats):
     # El hedge de Swisstony/Lily es parte de su estrategia (in-play). Su MERGE
     # los disuelve a $0.50 y el watcher MERGE-detection ya lo gestiona. Filtrar
     # aquí nos hace perder ~30% de su volumen sin razón válida.
-    DEF_COPY_BYPASS_HEDGE = {
-        '0x204f72f35326db932158cba6adff0b9a1da95e14',  # Swisstony
-        '0x84dbb7103982e3617704a2ed7d5b39691952aeeb',  # Soarin22
-        '0xc96e5287ab294ac0388c2ddb00180fc464cff1f9',  # wigglew
-        '0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f',  # kinderSman
-    }
+    DEF_COPY_BYPASS_HEDGE = DEF_COPY_WALLETS
     _wallet_lc = (wallet or '').lower()
     if _wallet_lc not in DEF_COPY_BYPASS_HEDGE:
         if hedge_status == "COBERTURA":
@@ -532,13 +519,15 @@ async def process_new_trade(wallet, trade, insider_stats):
     # Early-exit total para niches descartados (2026-05-25 user decision).
     # Ni se almacena la señal — el trader que la emite tampoco recibe
     # crédito en su perfil para este trade.
-    if niche in IGNORED_NICHES:
+    if niche in IGNORED_NICHES and not _is_def_wallet:
         return
 
-    ok, reason = passes_user_preferences(niche, retorno, days_left_val, insider_score, entry_price=price)
-    if not ok:
-        print(f"Filtrado [{reason}]: {question[:40]}")
-        return
+    # Las preferencias de nicho/retorno son para señales de terceros; los monederos de copia se replican tal cual.
+    if not _is_def_wallet:
+        ok, reason = passes_user_preferences(niche, retorno, days_left_val, insider_score, entry_price=price)
+        if not ok:
+            print(f"Filtrado [{reason}]: {question[:40]}")
+            return
 
     # Research: desactivado desde L30 (2026-05-31). Stub directo sin cache.
     print(f"[{level}] {wallet[:8]}... | {question[:45]} | {side} {round(size)} USDC | NO-CLAUDE")
@@ -728,11 +717,12 @@ async def whitelist_fast_loop():
                         "SELECT address, insider_score, win_rate, total_trades, profit_factor "
                         "FROM wallets WHERE LOWER(address)=?", (addr,)).fetchone()
                     _wconn.close()  # L81 FIX: conexión siempre cerrada
-                    if r:
-                        wallets_meta[addr] = r
-                        # init timestamp = now - 60s para no perder señales recientes al arrancar
-                        from datetime import timezone as _tz
-                        fast_ts[addr] = int(datetime.now(_tz.utc).timestamp()) - 60
+                    # Un monedero de la whitelist que no salió del análisis del leaderboard (p. ej. los de
+                    # COPY_WALLETS) no está en la tabla wallets: se vigila igual, con métricas neutras.
+                    wallets_meta[addr] = r or (addr, 1.0, 0.0, 0, 0.0)
+                    # init timestamp = now - 60s para no perder señales recientes al arrancar
+                    from datetime import timezone as _tz
+                    fast_ts[addr] = int(datetime.now(_tz.utc).timestamp()) - 60
             # Procesar cada whitelist wallet en paralelo
             tasks = [process_wallet(w, fast_ts) for w in wallets_meta.values()]
             if tasks:

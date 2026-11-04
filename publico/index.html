@@ -104,21 +104,21 @@ footer a { color: var(--gris); }
       <div class="lecturas hud">
         <span class="vivo" id="vivo"><i></i><span id="estado">conectando</span></span><span id="actualizado" class="num">—</span>
         <span>origen</span><span class="blanco">polymarket · data api v2</span>
-        <span>sondeo</span><span class="blanco num">2 s · 8 monederos</span>
-        <span>inicio</span><span class="blanco num" id="inicio">—</span>
+        <span>sondeo</span><span class="blanco num" id="sondeo">2 s</span>
+        <span>ventana</span><span class="blanco num" id="ventana">—</span>
       </div>
     </div>
     <div class="hud num" id="totales" style="text-align:right"></div>
   </section>
 
-  <h1 class="titular">Copiamos a los mejores traders de Polymarket, en directo. Esto es lo que pasa.</h1>
+  <h1 class="titular">Copiamos la entrada y la salida de tres traders de Polymarket, a escala y en directo. Esto es lo que pasa.</h1>
   <p class="aviso" id="aviso">Simulación en papel con precios reales de Polymarket. No se arriesga dinero. No es asesoramiento financiero.</p>
 
   <section class="escena" aria-label="Mapa de entradas">
     <canvas id="montana" role="img" aria-label="Nube de puntos con la densidad de entradas por precio y por momento"></canvas>
     <div class="lateral hud num"><table id="lateral"></table></div>
     <div class="lectura-grande num">
-      <div class="hud">resultado combinado · usdc</div>
+      <div class="hud">copia · resultado realizado · usdc</div>
       <div class="grande" id="combinado">—</div>
       <div class="hud" id="combinado-sub"></div>
     </div>
@@ -127,11 +127,11 @@ footer a { color: var(--gris); }
 
   <section class="rejilla">
     <div class="bloque s4">
-      <h2 class="hud">estrategias</h2>
+      <h2 class="hud">agentes · realizado (no realizado aparte)</h2>
       <div id="agentes"></div>
     </div>
     <div class="bloque s8">
-      <h2 class="hud">resultado acumulado · usdc simulados</h2>
+      <h2 class="hud">resultado realizado acumulado · usdc simulados</h2>
       <canvas class="grafica" id="curva" role="img" aria-label="Evolución del resultado de cada estrategia" style="height:250px"></canvas>
       <div class="hud" id="leyenda" style="margin-top:6px"></div>
     </div>
@@ -139,7 +139,7 @@ footer a { color: var(--gris); }
 
   <section class="rejilla">
     <div class="bloque s6">
-      <h2 class="hud">resultado por operación · distribución</h2>
+      <h2 class="hud">resultado por operación · realizado + latente · distribución</h2>
       <canvas class="grafica" id="histo-pnl" role="img" aria-label="Distribución del resultado de cada operación"></canvas>
     </div>
     <div class="bloque s6">
@@ -152,7 +152,7 @@ footer a { color: var(--gris); }
     <div class="bloque s12">
       <h2 class="hud">registro de señales · últimas</h2>
       <table class="ops num">
-        <thead><tr><th>t</th><th>mercado / apuesta</th><th class="oculto-movil">entrada</th><th>a · b · c</th></tr></thead>
+        <thead><tr><th>t</th><th>mercado / apuesta</th><th class="oculto-movil">entrada</th><th id="cab-agentes">copia</th></tr></thead>
         <tbody id="operaciones"></tbody>
       </table>
     </div>
@@ -160,14 +160,14 @@ footer a { color: var(--gris); }
 
   <section class="rejilla">
     <div class="bloque s7">
-      <h2 class="hud">monederos seguidos · acierto histórico · factor de beneficio</h2>
-      <div class="lista-mon num" id="monederos"></div>
+      <h2 class="hud">monederos copiados · criterios de selección · resultado de la copia</h2>
+      <table class="ops num" id="copiados"></table>
     </div>
     <div class="bloque s5 como">
       <h2 class="hud">método</h2>
-      <p><b>01</b>Del top 200 mensual de Polymarket se quedan los traders con más de un 70 % de acierto y un factor de beneficio de 1,5 en sus posiciones cerradas.</p>
-      <p><b>02</b>Cuando uno entra con tamaño suficiente, el bot abre la misma apuesta en papel con tres estrategias: A con objetivo y stop fijos, B calibrados, C hasta la resolución.</p>
-      <p><b>03</b>El resultado se recalcula cada minuto con el precio real del mercado. Esta página se actualiza sola.</p>
+      <p><b>01</b>Del ranking de Polymarket se eligen tres traders que cumplen tres criterios: Sharpe del PnL realizado de 30 días por encima de 1, más de un año operando de forma constante en muchos mercados, y disciplina de salida (venden con regularidad).</p>
+      <p><b>02</b>Cuando uno compra, el bot compra lo mismo en papel, a su escala (una fracción fija de su tamaño). Cuando vende, el bot vende la misma fracción. Si no vende, se espera a que el mercado resuelva.</p>
+      <p><b>03</b>DEF_TP y DEF_HOLD usan las mismas entradas con salidas propias, solo para comparar. La cifra principal es el resultado realizado; lo latente se muestra aparte.</p>
     </div>
   </section>
 
@@ -291,9 +291,8 @@ function pintarCurva(hist, ids) {
   }
   x.setLineDash([]); x.strokeStyle = "rgba(255,255,255,0.25)"; x.beginPath(); x.moveTo(m.i, Y(0) + 0.5); x.lineTo(W - m.d, Y(0) + 0.5); x.stroke();
   rotulo(x, hhmm(hist[0].t), m.i, H - 6); rotulo(x, hhmm(hist.at(-1).t), W - m.d, H - 6, "right");
-  const brillo = { A: 1, B: 0.55, C: 0.8 };
   ids.forEach((id, j) => {
-    const b = brillo[id] ?? 0.7;
+    const b = [1, 0.55, 0.8][j] ?? 0.7;
     for (let i = 0; i < hist.length - 1; i++) {
       const pasos = Math.max(2, Math.ceil((X(ts[i + 1]) - X(ts[i])) / 1.6));
       for (let s = 0; s < pasos; s++) {
@@ -309,7 +308,7 @@ function pintarCurva(hist, ids) {
       }
     }
     const ult = hist.at(-1)[id] ?? 0;
-    rotulo(x, `${id} ${usd(ult)}`, W - m.d - 2, Y(ult) - 6 - j * 0, "right", TINTA);
+    rotulo(x, `${corto(id)} ${usd(ult)}`, W - m.d - 2, Y(ult) - 6 - j * 12, "right", TINTA);
   });
 }
 
@@ -342,27 +341,38 @@ function histograma(id, valores, { min, max, bins, etiqueta }) {
 }
 
 // ── texto ─────────────────────────────────────────────────────────────────
-function pintarTexto(p) {
-  const total = p.agentes.reduce((s, a) => s + a.pnl_total, 0), ops = p.agentes.reduce((s, a) => s + a.operaciones, 0);
-  const abiertas = p.agentes.reduce((s, a) => s + a.abiertas, 0), invertido = p.agentes.reduce((s, a) => s + a.invertido, 0);
-  const el = document.getElementById("combinado");
-  el.textContent = usd(total); el.classList.toggle("baja", total < 0);
-  document.getElementById("combinado-sub").textContent = `${pct(invertido ? total / invertido : null)} sobre ${fmt(invertido, 0)} apostados`;
-  document.getElementById("totales").innerHTML = `operaciones <b>${ops}</b><br>abiertas <b>${abiertas}</b><br>monederos <b>${p.monederos.length}</b>`;
-  document.getElementById("inicio").textContent = p.inicio ? new Date(p.inicio).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
-  document.getElementById("lateral").innerHTML = p.agentes.map(a => `<tr><td>${esc(a.id)} · ${esc(a.nombre)}</td><td class="${a.pnl_total < 0 ? "baja" : "blanco"}">${usd(a.pnl_total)}</td></tr>
-    <tr><td>&nbsp;&nbsp;ops / abiertas</td><td>${a.operaciones} / ${a.abiertas}</td></tr>
-    <tr><td>&nbsp;&nbsp;acierto</td><td>${pct(a.acierto)}</td></tr>`).join("");
-  document.getElementById("agentes").innerHTML = p.agentes.map(a => `<div class="agente num">
-      <div class="grande ${a.pnl_total < 0 ? "baja" : ""}">${usd(a.pnl_total)}</div>
-      <div><b>${esc(a.id)}</b> <span class="hud">${esc(a.nombre)}</span></div>
-      <div class="hud">${esc(a.descripcion)}</div>
-      <div class="datos hud"><span>ops <b>${a.operaciones}</b></span><span>abiertas <b>${a.abiertas}</b></span><span>acierto <b>${pct(a.acierto)}</b></span></div>
-    </div>`).join("");
-  document.getElementById("leyenda").innerHTML = p.agentes.map(a => `${esc(a.id)} · ${esc(a.nombre)}`).join("&nbsp;&nbsp;&nbsp;") + "&nbsp;&nbsp;&nbsp;<span class='baja'>rojo: por debajo de cero</span>";
+const CORTO = { DEF_COPY: "copia", DEF_TP: "tp/sl", DEF_HOLD: "hold" };
+const corto = id => CORTO[id] || id.toLowerCase();
+const fecha = iso => iso ? new Date(iso).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) + " UTC" : "—";
+const cifra = (n, cls = "") => `<span class="${n < 0 ? "baja" : cls}">${usd(n)}</span>`;
 
+function pintarTexto(p) {
+  const principal = p.agentes.find(a => a.principal) || p.agentes[0];
+  const ops = p.agentes.reduce((s, a) => s + a.operaciones, 0), abiertas = p.agentes.reduce((s, a) => s + a.abiertas, 0);
+  const el = document.getElementById("combinado");
+  el.textContent = principal ? usd(principal.realizado) : "—"; el.classList.toggle("baja", principal && principal.realizado < 0);
+  document.getElementById("combinado-sub").innerHTML = principal
+    ? `no realizado ${usd(principal.no_realizado)} · comisiones ${fmt(principal.comisiones)} · ${principal.cerradas} cerradas / ${principal.abiertas} abiertas` : "";
+  document.getElementById("totales").innerHTML = `operaciones <b>${ops}</b><br>abiertas <b>${abiertas}</b><br>monederos <b>${(p.copiados || []).length}</b>`;
+  document.getElementById("sondeo").textContent = `2 s · ${(p.copiados || []).length} monederos`;
+  const v = p.ventana || {};
+  document.getElementById("ventana").textContent = v.inicio ? `${fecha(v.inicio)} → ahora` : "—";
+  document.getElementById("lateral").innerHTML = p.agentes.map(a => `<tr><td>${esc(a.id)}</td><td>${cifra(a.realizado, "blanco")}</td></tr>
+    <tr><td>&nbsp;&nbsp;no realizado</td><td>${usd(a.no_realizado)}</td></tr>
+    <tr><td>&nbsp;&nbsp;ops / abiertas</td><td>${a.operaciones} / ${a.abiertas}</td></tr>`).join("");
+  document.getElementById("agentes").innerHTML = p.agentes.map(a => `<div class="agente num">
+      <div class="grande ${a.realizado < 0 ? "baja" : ""}">${usd(a.realizado)}</div>
+      <div><b>${esc(a.id)}</b> <span class="hud">${a.principal ? "principal" : "base de comparación"}</span></div>
+      <div class="hud">${esc(a.descripcion)}</div>
+      <div class="datos hud"><span>latente <b>${usd(a.no_realizado)}</b></span><span>ops <b>${a.operaciones}</b></span><span>acierto <b>${pct(a.acierto)}</b></span></div>
+    </div>`).join("");
+  document.getElementById("leyenda").innerHTML = p.agentes.map(a => `${esc(a.id)}`).join("&nbsp;&nbsp;&nbsp;")
+    + `&nbsp;&nbsp;&nbsp;<span class='baja'>rojo: por debajo de cero</span><br>fuente: ${esc(p.fuente || "")}`;
+
+  const ids = p.agentes.map(a => a.id);
+  document.getElementById("cab-agentes").textContent = ids.map(corto).join(" · ");
   const caja = document.getElementById("operaciones");
-  if (!p.recientes.length) caja.innerHTML = `<tr><td colspan="4" class="vacio">esperando la primera señal</td></tr>`;
+  if (!p.recientes.length) caja.innerHTML = `<tr><td colspan="4" class="vacio">esperando la primera compra de los traders copiados</td></tr>`;
   else {
     const grupos = new Map();
     for (const o of p.recientes) {
@@ -372,14 +382,26 @@ function pintarTexto(p) {
     }
     caja.innerHTML = [...grupos.values()].slice(0, 16).map(g => `<tr>
       <td class="hud">${hace(g.entrada)}</td>
-      <td class="mercado">${esc(g.mercado)}<br><span class="hud">${esc(g.apuesta)} · copia ${esc(g.monedero)}</span></td>
+      <td class="mercado">${esc(g.mercado)}<br><span class="hud">${esc(g.apuesta)} · copia ${esc(g.monedero)}${g.por.DEF_COPY && g.por.DEF_COPY.salida ? " · el trader vendió" : ""}</span></td>
       <td class="d oculto-movil">${Number(g.precio_entrada).toFixed(2)}</td>
-      <td class="d">${["A", "B", "C"].map(id => g.por[id]
-        ? `<span class="${g.por[id].pnl < 0 ? "baja" : ""}" title="${esc(ESTADOS[g.por[id].estado] || g.por[id].estado)}">${usd(g.por[id].pnl)}</span>`
-        : `<span class="hud">—</span>`).join(" · ")}</td></tr>`).join("");
+      <td class="d">${ids.map(id => {
+        const o = g.por[id];
+        if (!o) return `<span class="hud">—</span>`;
+        const estado = esc(ESTADOS[o.estado] || o.estado);
+        return o.estado === "open"
+          ? `<span class="hud" title="${estado} · latente">${usd(o.no_realizado + o.realizado)}</span>`
+          : `<span class="${o.realizado < 0 ? "baja" : ""}" title="${estado}">${usd(o.realizado)}</span>`;
+      }).join(" · ")}</td></tr>`).join("");
   }
-  document.getElementById("monederos").innerHTML = p.monederos.map(m => `<div><span>${esc((m.nombre || "anónimo").slice(0, 16))} <span class="hud">${esc(m.monedero)}</span></span>
-    <span>${pct(m.acierto_historico)} · ${m.profit_factor > 100 ? "&gt;100" : fmt(m.profit_factor, 1)}</span></div>`).join("");
+  const cp = p.copiados || [];
+  document.getElementById("copiados").innerHTML = `<thead><tr><th>trader</th><th class="oculto-movil">escala</th><th class="oculto-movil">sharpe 30d</th>
+      <th class="oculto-movil">meses / 12</th><th>ops · abiertas</th><th class="d">realizado</th><th class="d oculto-movil">latente</th></tr></thead><tbody>`
+    + cp.map(m => `<tr><td><a href="${esc(m.perfil)}" style="color:inherit">${esc(m.nombre)}</a><br><span class="hud">${esc(m.monedero)}</span></td>
+      <td class="oculto-movil">×${fmt(m.escala * 100, 2)}%</td>
+      <td class="oculto-movil">${m.sharpe_30d != null ? fmt(m.sharpe_30d, 2) : "—"}</td>
+      <td class="oculto-movil">${m.meses_activos_12 ?? "—"}</td>
+      <td>${m.operaciones} · ${m.abiertas}</td>
+      <td class="d">${cifra(m.realizado)}</td><td class="d oculto-movil">${usd(m.no_realizado)}</td></tr>`).join("") + "</tbody>";
 }
 
 // Operaciones para las gráficas: todas si el JSON trae «puntos», si no, las recientes.

@@ -128,7 +128,16 @@ POLY_WALLET_ADDRESS, POLY_EOA_ADDRESS, POLY_PRIVATE_KEY
 POLY_SIGNATURE_TYPE
 ```
 
-### Per-wallet scale (mirror ratio)
+### Wallets to mirror
+```
+COPY_WALLETS=0xADDR:Name:0.0107,0xADDR:Name:0.0015   # address:name:scale — DEF_COPY mirrors exactly these
+PAPER_AGENTES=DEF_COPY,DEF_TP,DEF_HOLD                # paper agents that run (others are deactivated)
+DEF_MAX_SIGNAL_AGE=120                                # seconds; older trader buys are not copied at today's price
+```
+`tools/seleccionar_wallets.py --escribir-env` fills `COPY_WALLETS` and the whitelists from the three tests
+below. Without `COPY_WALLETS`, `DEF_COPY` falls back to Swisstony and the legacy per-wallet scales:
+
+### Per-wallet scale (legacy wallets)
 ```
 DEFINITIVE_SWIS_SCALE=0.0078       # we mirror Swisstony at 0.78 % of his size
 DEFINITIVE_SOARIN_SCALE=0.005
@@ -162,11 +171,13 @@ REAL_COPY_TRADE_SIZE=5             # USDC floor for the real path
 
 ## Known-good trader selection
 
-The whitelist is rebuilt from Polymarket's public leaderboard (`tools/construir_whitelist.py`), then filtered down manually to a handful of wallets that pass three tests:
+`tools/seleccionar_wallets.py` screens Polymarket's public leaderboard (monthly and all-time) and keeps the wallets that pass three tests, ranked by Sharpe; the thresholds are command-line options:
 
-1. **Sharpe-equivalent > 1** on 30-day realised P&L.
-2. **At least one year** of consistent on-chain activity, not a single-market whale.
-3. **Exit discipline** — they sell and merge regularly, so our `definitive_copy_watcher` has events to mirror.
+1. **Sharpe-equivalent > 1** on 30-day realised P&L (daily realised P&L from closed positions, mean / std × √30, at least 15 closes).
+2. **At least one year** of consistent on-chain activity (activity older than 365 days and in ≥ 10 of the last 12 months), not a single-market whale (≥ 15 markets in 30 days, no market above 25 % of volume).
+3. **Exit discipline** — they sell and merge regularly (≥ 10 exits in 30 days and ≥ 10 % of their buys), so our `definitive_copy_watcher` has events to mirror.
+
+Each wallet's scale is set so its median position per market is copied at ~10 USDC.
 
 Wallets that drift below a 7-day Sharpe floor are flagged by `tools/wallet_rotator.py`.
 

@@ -21,7 +21,10 @@ import requests
 from datetime import datetime, timedelta
 from collections import Counter
 
+import os
+
 import config
+import copy_wallets
 import database
 
 # Race-condition fix (2026-06-10): in-memory lock de apertura para DEF agents.
@@ -351,19 +354,18 @@ def evaluate_signal_for_paper_trade(signal: dict) -> list[int]:
     # Bloquear señales antiguas del lookback de startup (mismo filtro que real router).
     # Evita la avalancha de N trades en los primeros segundos tras arranque.
     # DEF wallets: sin límite de edad — sus señales son siempre válidas (REINFORCE acumulado).
-    _DEF_WALLETS_ALL = {
-        '0x204f72f35326db932158cba6adff0b9a1da95e14',  # Swisstony
-        '0x84dbb7103982e3617704a2ed7d5b39691952aeeb',  # Soarin22
-        '0xc96e5287ab294ac0388c2ddb00180fc464cff1f9',  # wigglew
-        '0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f',  # kinderSman
-    }
+    # DEF_MAX_SIGNAL_AGE (s) limita también la edad para ellas: copiar una entrada de hace horas, al precio
+    # de ahora, no es copiar la entrada (0 = sin límite, comportamiento histórico).
+    _DEF_WALLETS_ALL = set(copy_wallets.todos())
     _sig_wallet = ((signal or {}).get('wallet') or '').lower()
     import time as _time
     _sig_ts = signal.get("timestamp")
-    if _sig_ts and _sig_wallet not in _DEF_WALLETS_ALL:
+    _es_def = _sig_wallet in _DEF_WALLETS_ALL
+    _max_age = float(os.getenv("DEF_MAX_SIGNAL_AGE", "0") or 0) if _es_def else 80
+    if _sig_ts and _max_age:
         try:
             _age_secs = _time.time() - float(_sig_ts)
-            if _age_secs > 80:
+            if _age_secs > _max_age:
                 print(f"[PAPER] SKIP señal antigua ({_age_secs:.0f}s) dt={dt_id} — lookback only")
                 return []
         except (TypeError, ValueError):
@@ -616,24 +618,7 @@ def _open_paper_trade(signal: dict, entry_price: float, token_id: str,
         #   - Si ya abrimos antes: agg = suma desde el último open (REINFORCE).
         #   - Size siempre proporcional: agg × scale, capado [$1, $10].
         # L77 (2026-06-06) — DEF_COPY solo Swisstony; DEF_COPY_05 Lily+Swisstony.
-        DEF_TRADERS_FULL = {
-            '0x204f72f35326db932158cba6adff0b9a1da95e14': {
-                'name': 'Swisstony',
-                'scale': float(_os.getenv('DEFINITIVE_SWIS_SCALE','0.00784')),
-            },
-            '0x84dbb7103982e3617704a2ed7d5b39691952aeeb': {
-                'name': 'Soarin22',
-                'scale': float(_os.getenv('DEFINITIVE_SOARIN_SCALE','0.005')),
-            },
-            '0xc96e5287ab294ac0388c2ddb00180fc464cff1f9': {
-                'name': 'wigglew',
-                'scale': float(_os.getenv('DEFINITIVE_WIGGLEW_SCALE','0.02')),
-            },
-            '0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f': {
-                'name': 'kinderSman',
-                'scale': float(_os.getenv('DEFINITIVE_KINDER_SCALE','0.01')),
-            },
-        }
+        DEF_TRADERS_FULL = copy_wallets.todos()
         # Routing: cada agente DEF_* copia solo su trader asignado
         _AGENT_WALLET = {
             'DEF_COPY_05':  '0x84dbb7103982e3617704a2ed7d5b39691952aeeb',
@@ -644,10 +629,8 @@ def _open_paper_trade(signal: dict, entry_price: float, token_id: str,
         if _assigned:
             DEF_TRADERS = {_assigned: DEF_TRADERS_FULL[_assigned]}
         else:
-            # DEF_COPY / DEF_TP / DEF_HOLD → Swisstony
-            DEF_TRADERS = {
-                '0x204f72f35326db932158cba6adff0b9a1da95e14': DEF_TRADERS_FULL['0x204f72f35326db932158cba6adff0b9a1da95e14'],
-            }
+            # DEF_COPY / DEF_TP / DEF_HOLD → los monederos de COPY_WALLETS (Swisstony si no hay)
+            DEF_TRADERS = copy_wallets.para_def_copy()
         wallet = ((signal or {}).get('wallet') or (signal or {}).get('wallet_address') or '').lower()
         cfg = DEF_TRADERS.get(wallet)
         if not cfg:

@@ -28,15 +28,28 @@ import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from datetime import datetime, timezone, timedelta
+import copy_wallets
 import database
 import data_api
 
-DEF_WALLETS = {
-    '0x204f72f35326db932158cba6adff0b9a1da95e14': 'Swisstony',
-    '0x84dbb7103982e3617704a2ed7d5b39691952aeeb': 'Soarin22',
-    '0xc96e5287ab294ac0388c2ddb00180fc464cff1f9': 'wigglew',
-    '0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f': 'kinderSman',
-}
+
+def _evento(s: dict) -> str:
+    """Identificador estable de una venta del trader: la misma venta nunca se aplica dos veces."""
+    return f"{s.get('transactionHash') or s.get('transaction_hash') or ''}|{s.get('asset') or ''}|{s.get('timestamp')}"
+
+
+def _asegurar_tabla_eventos(conn) -> None:
+    conn.execute("""CREATE TABLE IF NOT EXISTS copy_exit_events (
+        paper_trade_id INTEGER NOT NULL, evento TEXT NOT NULL, aplicado_at TEXT NOT NULL,
+        PRIMARY KEY (paper_trade_id, evento))""")
+
+
+def _epoch(iso: str) -> int:
+    """entry_at se guarda en UTC sin zona (datetime.utcnow().isoformat())."""
+    try:
+        return int(datetime.fromisoformat(str(iso)).replace(tzinfo=timezone.utc).timestamp())
+    except (TypeError, ValueError):
+        return 0
 
 
 def _now_iso():
@@ -86,7 +99,7 @@ def _fetch_exits(addr: str, cutoff_ts: int) -> dict:
 
 
 def _close_real_bot_trades(market_id: str, exit_price: float, exit_reason: str,
-                           swis_event_usdc: float = 0.0):
+                           swis_event_usdc: float = 0.0, scale: float | None = None):
     """
     L79 — Cierra los bot_trades reales de DEF_COPY para un market_id dado.
     swis_event_usdc: USDC que Swis vendió/mergeó. Si > 0, cierre proporcional
@@ -95,7 +108,7 @@ def _close_real_bot_trades(market_id: str, exit_price: float, exit_reason: str,
     """
     try:
         import executor as _exec
-        SCALE = float(_os.getenv('DEFINITIVE_SWIS_SCALE', '0.00784'))
+        SCALE = scale if scale is not None else float(_os.getenv('DEFINITIVE_SWIS_SCALE', '0.00784'))
         conn = database.get_connection()
         real_trades = conn.execute(
             """SELECT id, entry_price, size_filled, size_usdc FROM bot_trades
@@ -185,12 +198,13 @@ def check_definitive_copy_exits() -> dict:
     # Limpieza preventiva: cancelar trades de wallets ajenas que el bot viejo
     # pueda haber abierto en DEF_COPY (Lily) o DEF_COPY_05 (wallets no Lily/Swis)
     ALLOWED = {
-        'DEF_COPY':    {'0x204f72f35326db932158cba6adff0b9a1da95e14'},  # solo Swisstony
+        'DEF_COPY':    set(copy_wallets.para_def_copy()),  # COPY_WALLETS (Swisstony si no hay)
         'DEF_COPY_05': {'0x84dbb7103982e3617704a2ed7d5b39691952aeeb'},  # solo Soarin22
         'DEF_WIGGLEW': {'0xc96e5287ab294ac0388c2ddb00180fc464cff1f9'},  # solo wigglew
         'DEF_KINDER':  {'0xa6d9b55a6a3a54a9d50ca94c64f00af69c50fd2f'},  # solo kinderSman
     }
     conn = database.get_connection()
+    _asegurar_tabla_eventos(conn)
     for ag, allowed_wallets in ALLOWED.items():
         placeholders = ','.join('?' * len(allowed_wallets))
         conn.execute(f"""
@@ -283,10 +297,11 @@ def check_definitive_copy_exits() -> dict:
     # Recargar la lista de opens excluyendo los recién cerrados
     opens = conn.execute("""
         SELECT id, token_id, market_id, entry_price, entry_shares,
-               fees_estimated, entry_size_usdc, wallet_copied
+               fees_estimated, entry_size_usdc, wallet_copied, entry_at
         FROM paper_trades
         WHERE agent_id IN ('DEF_COPY','DEF_COPY_05','DEF_WIGGLEW','DEF_KINDER','B') AND status='open'
     """).fetchall()
+    aplicados = {(r[0], r[1]) for r in conn.execute("SELECT paper_trade_id, evento FROM copy_exit_events")}
     conn.close()
 
     if not opens:
@@ -306,29 +321,32 @@ def check_definitive_copy_exits() -> dict:
             continue
         exits_by_wallet[addr] = _fetch_exits(addr, cutoff)
 
-    for pt_id, token_id, market_id, entry_price, shares, fees, sz, wc in opens:
+    for pt_id, token_id, market_id, entry_price, shares, fees, sz, wc, entry_at in opens:
         wc_l = (wc or '').lower()
         if wc_l not in exits_by_wallet:
             continue
         data = exits_by_wallet[wc_l]
 
-        # Solo salimos cuando Swis hace SELL en el token concreto.
+        # Solo salimos cuando el trader hace SELL en el token concreto.
         # MERGE ignorado: Swis mergea para recuperar capital (YES+NO→$1) pero
         # mantiene exposición. Replicar su merge no tiene sentido a nuestra escala
         # y la API no devuelve usdcSize en merges. Dejamos resolver al mercado.
-        swis_event_usdc = 0.0
-        sells = [s for s in data['sells'] if s.get('asset') == token_id]
+        # Idempotencia (LESSONS §9): cada venta del trader se aplica una sola vez por posición
+        # (copy_exit_events), y solo cuentan las ventas posteriores a nuestra entrada.
+        desde = _epoch(entry_at)
+        sells = [s for s in data['sells'] if s.get('asset') == token_id
+                 and int(s.get('timestamp') or 0) >= desde and (pt_id, _evento(s)) not in aplicados]
         if not sells:
             continue
-        s = sorted(sells, key=lambda x: x.get('timestamp', 0))[-1]
-        exit_price = float(s.get('price', entry_price) or entry_price)
+        swis_event_usdc = sum(float(s.get('usdcSize', 0) or 0) for s in sells)
+        acciones = sum(float(s.get('size', 0) or 0) for s in sells)
+        exit_price = (swis_event_usdc / acciones) if acciones > 0 else float(sells[-1].get('price', entry_price) or entry_price)
         exit_reason = 'trader_sold'
-        swis_event_usdc = float(s.get('usdcSize', 0) or 0)
 
         # Salida proporcional a escala (igual que la entrada):
-        # swis vende X USDC → nosotros salimos de X × SCALE USDC de nuestra posición.
+        # el trader vende X USDC → nosotros salimos de X × SCALE USDC de nuestra posición.
         # Si swis_event_usdc=0 (campo ausente), cerramos todo por seguridad.
-        SCALE = float(_os.getenv('DEFINITIVE_SWIS_SCALE', '0.00784'))
+        SCALE = copy_wallets.escala(wc_l)
         entry_shares_f = float(shares or 0)
         entry_price_f  = float(entry_price or 0)
         if swis_event_usdc > 0 and exit_price > 0:
@@ -347,6 +365,9 @@ def check_definitive_copy_exits() -> dict:
 
         try:
             conn = database.get_connection()
+            for s_ev in sells:
+                conn.execute("INSERT OR IGNORE INTO copy_exit_events VALUES (?,?,?)", (pt_id, _evento(s_ev), _now_iso()))
+                aplicados.add((pt_id, _evento(s_ev)))
             if partial:
                 # Salida parcial: reducir shares, acumular PnL realizado parcial
                 remaining_shares = round(entry_shares_f - close_shares, 6)
@@ -369,7 +390,7 @@ def check_definitive_copy_exits() -> dict:
                      _now_iso(), exit_price, pt_id))
                 conn.commit()
                 conn.close()
-                trader = DEF_WALLETS.get(wc_l, wc_l[:10])
+                trader = copy_wallets.nombre(wc_l)
                 print(f"[COPY_EXIT] #{pt_id} parcial · {trader} {exit_reason} @ {exit_price:.4f} "
                       f"· {close_shares:.4f}sh / {remaining_shares:.4f}sh restantes · pnl parcial ${net:+.4f}")
             else:
@@ -388,15 +409,14 @@ def check_definitive_copy_exits() -> dict:
                     out["closed_sell"] += 1
                 else:
                     out["closed_merge"] += 1
-                trader = DEF_WALLETS.get(wc_l, wc_l[:10])
+                trader = copy_wallets.nombre(wc_l)
                 print(f"[COPY_EXIT] #{pt_id} cerrado · {trader} {exit_reason} @ {exit_price:.4f} · pnl ${net:+.4f}")
 
             # Real: cerrar bot_trade via CLOB siempre que Swis salga (parcial o total).
             # REAL_COPY_ENABLED=false bloquea nuevas entradas pero no los cierres.
-            SWIS = '0x204f72f35326db932158cba6adff0b9a1da95e14'
-            if wc_l == SWIS:
+            if wc_l in copy_wallets.para_def_copy():
                 _close_real_bot_trades(market_id, exit_price, exit_reason,
-                                       swis_event_usdc=swis_event_usdc)
+                                       swis_event_usdc=swis_event_usdc, scale=SCALE)
         except Exception as e:
             out["errors"] += 1
             print(f"[DEF_COPY] err cerrando #{pt_id}: {e}")
