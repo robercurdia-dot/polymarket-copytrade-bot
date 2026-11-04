@@ -144,6 +144,20 @@ The exporter in `tools/exportar_progreso.py` was rewritten to emit only paper-si
 
 ---
 
+## 11. The size-ratio fix belongs at trader selection, not at the cap
+
+**What happened.** When rebuilding the whitelist against the lesson-5 size-ratio math, three of the candidate wallets came back at **1:93, 1:415, 1:650** — two of them *worse* than the 1:153 case lesson 5 already tagged as failed. The temptation was to raise `DEFINITIVE_MAX_PER_TRADE` from $20 to $50 or $100 so the ratios would come in under 1:150.
+
+That would have been the wrong fix. Lesson 5 is explicit: the real fix for the 1:153 case was capital, not cap. Raising the cap without the underlying float just scales up the per-trade risk while the edge stays the same shape — the strategy still gets priced out of the whale's winning setups because we hit the cap before they're done building, and we now lose *more* when we're on the wrong side.
+
+**Fix.** Added **criterion 4 — size-ratio ≤ 1:150** to the whitelist selector, documented in the README. We now filter candidate whales on the ratio against the *current* `DEFINITIVE_MAX_PER_TRADE`. The rejected ones (large or spiky position sizes we can't mirror) get parked, not forced in. The whitelist becomes capital-bound by design, not by accident.
+
+The implication, which the README also states plainly: if `MAX_PER_TRADE` goes up because the float does, the selector re-opens those wallets automatically. The filter is a function of money available, not a judgement about the trader.
+
+**Lesson.** When a strategy's limit and a selection's preconditions conflict, fix the selection. Raising a limit to accommodate a bad pick is how you discover lesson 5 twice.
+
+---
+
 ## Changes that were proposed but **not** shipped
 
 Honesty requires listing the ones that didn't make it, too:

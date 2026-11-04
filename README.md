@@ -151,6 +151,9 @@ DEFINITIVE_THRESHOLD=50            # min cumulative USD before an entry triggers
 DEFINITIVE_MIN_TRADE=1             # USDC floor per trade
 DEFINITIVE_MAX_PER_TRADE=20        # USDC ceiling per trade
 DEFINITIVE_MAX_SLIPPAGE=0.15       # slippage cap for DEF_COPY orders
+DEF_MAX_SIGNAL_AGE=120             # discard whale signals older than this (seconds)
+                                   # protects against buying "now" at today's price
+                                   # when the whale entered hours ago
 ```
 
 ### Risk gates
@@ -171,15 +174,40 @@ REAL_COPY_TRADE_SIZE=5             # USDC floor for the real path
 
 ## Known-good trader selection
 
-`tools/seleccionar_wallets.py` screens Polymarket's public leaderboard (monthly and all-time) and keeps the wallets that pass three tests, ranked by Sharpe; the thresholds are command-line options:
+`tools/seleccionar_wallets.py` screens Polymarket's public leaderboard (monthly and all-time) and keeps the wallets that pass **four** concrete tests, ranked by Sharpe. The thresholds below are the current defaults; each is a command-line option on the selector. Each surviving wallet's scale is then set so its median position per market is copied at ~10 USDC, and written to `COPY_WALLETS` (see `copy_wallets.py`).
 
-1. **Sharpe-equivalent > 1** on 30-day realised P&L (daily realised P&L from closed positions, mean / std × √30, at least 15 closes).
-2. **At least one year** of consistent on-chain activity (activity older than 365 days and in ≥ 10 of the last 12 months), not a single-market whale (≥ 15 markets in 30 days, no market above 25 % of volume).
-3. **Exit discipline** — they sell and merge regularly (≥ 10 exits in 30 days and ≥ 10 % of their buys), so our `definitive_copy_watcher` has events to mirror.
+### Criterion 1 — Sharpe-equivalent > 1 on 30 days
 
-Each wallet's scale is set so its median position per market is copied at ~10 USDC.
+Per-day realised P&L series built from positions *closed* in the window (not opened). `sharpe = mean(daily_pnl) / stdev(daily_pnl) * sqrt(30)`. Requires **at least 15 closes** in the 30 days; otherwise the variance estimate is noise and we reject regardless of the mean.
 
-Wallets that drift below a 7-day Sharpe floor are flagged by `tools/wallet_rotator.py`.
+### Criterion 2 — ≥ 1 year of *consistent* activity, not a single-market whale
+
+- Active in **at least 10 of the last 12 calendar months** (no multi-month blackouts).
+- **At least 15 distinct markets** in the last 30 days.
+- **No single market > 25 % of their 30-day traded volume** — a one-shot YOLO wallet isn't repeatable.
+
+### Criterion 3 — Exit discipline
+
+The `definitive_copy_watcher` only helps us if the whale actually *has* exits to mirror.
+
+- **At least 10 SELL or MERGE events** in the last 30 days.
+- Those exits must equal **at least 10 %** of their BUY count — a trader who only buys and resolves is useless to us.
+
+### Criterion 4 — Size-ratio ≤ 1:150 at our current cap
+
+Direct application of **[Lesson 5](LESSONS.md#5-we-were-operating-at-1153-of-the-whales-size--the-math-doesnt-work-at-that-scale)**. For each candidate wallet we compute:
+
+```
+ratio = median_position_size_per_market(whale) / DEFINITIVE_MAX_PER_TRADE
+```
+
+If `ratio > 150` we drop the wallet, no matter how good their Sharpe is. The 1:153 ratio we ran live was flat precisely because of this; we're not going to pick traders that are structurally worse than the case we already know doesn't work.
+
+The implication, for the record: this criterion is a **capital-bound filter**, not a strategy filter. Raising `DEFINITIVE_MAX_PER_TRADE` above $20 (which requires more float than we have today) would re-open some of the whales currently rejected — but doing it without the capital just scales up our per-trade risk without improving our edge, which is also what lesson 5 warns against.
+
+### Continuous rotation
+
+`tools/wallet_rotator.py` re-runs the four tests on a rolling basis. Wallets that drift below a 7-day Sharpe floor, miss the exit-discipline threshold two months in a row, or cross back above the size-ratio limit are flagged for removal from the live whitelist.
 
 ## Safety
 
