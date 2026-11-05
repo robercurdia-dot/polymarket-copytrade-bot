@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Redfigure · copytrading en directo</title>
 <meta name="description" content="Simulación en papel, en tiempo real, de un bot que copia a los mejores traders de Polymarket. Sin dinero real.">
-<meta property="og:title" content="Redfigure · copiamos a los mejores traders de Polymarket">
-<meta property="og:description" content="Un bot replica en tiempo real las apuestas de los traders con mejor historial, con tres estrategias. Simulación en papel, sin dinero real.">
+<meta property="og:title" content="Redfigure · copiamos a tres traders de Polymarket en directo">
+<meta property="og:description" content="Seguimos a tres traders de Polymarket y copiamos cada compra y cada venta, a escala, en cuanto se confirma en la cadena. Simulación en papel, sin dinero real.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#000000">
@@ -61,31 +61,45 @@ b, .blanco { color: var(--tinta); font-weight: 500; }
 .bloque { padding: 14px 14px 12px 0; border-right: 1px solid var(--linea); min-width: 0; }
 .bloque + .bloque { padding-left: 14px; }
 .bloque:last-child { border-right: 0; padding-right: 0; }
-.s4 { grid-column: span 4; } .s5 { grid-column: span 5; } .s6 { grid-column: span 6; } .s7 { grid-column: span 7; } .s8 { grid-column: span 8; } .s12 { grid-column: span 12; }
+.s6 { grid-column: span 6; } .s12 { grid-column: span 12; }
 .bloque h2 { margin: 0 0 10px; font: inherit; }
 canvas.grafica { display: block; width: 100%; height: 220px; }
-
-.agente { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; padding: 10px 0; border-top: 1px dashed var(--linea); }
-.agente:first-of-type { border-top: 0; }
-.agente .grande { font-size: clamp(24px, 3.2vw, 34px); grid-row: span 3; align-self: center; min-width: 4.8ch; }
-.agente .datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 10px; }
 
 table.ops { width: 100%; border-collapse: collapse; }
 table.ops th { text-align: left; font-weight: 400; color: var(--gris); padding: 0 6px 6px 0; border-bottom: 1px solid var(--linea); }
 table.ops td { padding: 5px 6px 5px 0; border-bottom: 1px dashed var(--rejilla); vertical-align: top; }
 table.ops td.d { text-align: right; white-space: nowrap; }
 table.ops .mercado { max-width: 360px; }
-.marca-ag { display: inline-block; min-width: 1.8em; border: 1px solid var(--tinta); text-align: center; margin-right: 3px; }
 .vacio { color: var(--gris); padding: 18px 0; }
-.lista-mon { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 18px; }
-.lista-mon div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--rejilla); padding: 3px 0; }
 .como p { margin: 0 0 6px; color: var(--gris); max-width: 680px; }
 .como b { margin-right: 6px; }
 footer { margin-top: 18px; color: var(--tenue); }
 footer a { color: var(--gris); }
 
+/* fichas de trader */
+.traders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--linea); }
+.trader { padding: 16px 16px 14px 0; border-right: 1px solid var(--linea); min-width: 0; }
+.trader + .trader { padding-left: 16px; }
+.trader:last-child { border-right: 0; padding-right: 0; }
+.trader h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0.04em; }
+.trader h3 a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--tenue); }
+.trader .grande { font-size: clamp(28px, 3.6vw, 40px); margin: 14px 0 2px; }
+.pares { display: grid; grid-template-columns: max-content 1fr; gap: 1px 14px; margin-top: 10px; }
+.pares span:nth-child(odd) { color: var(--gris); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; padding-top: 1px; }
+.pares span:nth-child(even) { text-align: right; }
+.trader h4 { margin: 16px 0 6px; font: inherit; color: var(--gris); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; }
+.movs { list-style: none; margin: 0; padding: 0; }
+.movs li { display: grid; grid-template-columns: 3.4em 3.6em 1fr auto; gap: 8px; padding: 4px 0; border-bottom: 1px dashed var(--rejilla); }
+.movs .m { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.etq { display: inline-block; border: 1px solid var(--tenue); padding: 0 4px; font-size: 10px; text-transform: uppercase; text-align: center; }
+.etq.buy { border-color: var(--tinta); }
+.etq.sell { border-color: var(--baja); color: var(--baja); }
+
 @media (max-width: 860px) {
-  .s4, .s5, .s6, .s7, .s8 { grid-column: span 12; }
+  .traders { grid-template-columns: 1fr; }
+  .trader, .trader + .trader { padding: 16px 0 14px; border-right: 0; border-bottom: 1px solid var(--linea); }
+  .trader:last-child { border-bottom: 0; }
+  .s6, .s12 { grid-column: span 12; }
   .bloque, .bloque + .bloque { padding: 14px 0 12px; border-right: 0; border-bottom: 1px solid var(--linea); }
   .bloque:last-child { border-bottom: 0; }
   .lateral { position: static; width: auto; margin: 10px 0; }
@@ -103,71 +117,66 @@ footer a { color: var(--gris); }
       <div class="marca">REDFIGURE <span class="caja">SIM · PAPEL</span></div>
       <div class="lecturas hud">
         <span class="vivo" id="vivo"><i></i><span id="estado">conectando</span></span><span id="actualizado" class="num">—</span>
-        <span>origen</span><span class="blanco">polymarket · data api v2</span>
-        <span>sondeo</span><span class="blanco num" id="sondeo">2 s</span>
+        <span>detección</span><span class="blanco">cadena polygon · ~3 s</span>
+        <span>respaldo</span><span class="blanco">polymarket data api v2</span>
         <span>ventana</span><span class="blanco num" id="ventana">—</span>
       </div>
     </div>
     <div class="hud num" id="totales" style="text-align:right"></div>
   </section>
 
-  <h1 class="titular">Copiamos la entrada y la salida de tres traders de Polymarket, a escala y en directo. Esto es lo que pasa.</h1>
+  <h1 class="titular">Seguimos a tres traders de Polymarket y copiamos cada compra y cada venta, a escala, en cuanto se confirma en la cadena.</h1>
   <p class="aviso" id="aviso">Simulación en papel con precios reales de Polymarket. No se arriesga dinero. No es asesoramiento financiero.</p>
 
-  <section class="escena" aria-label="Mapa de entradas">
-    <canvas id="montana" role="img" aria-label="Nube de puntos con la densidad de entradas por precio y por momento"></canvas>
+  <section class="escena" aria-label="Mapa de copias">
+    <canvas id="montana" role="img" aria-label="Nube de puntos con las copias por precio de entrada y por momento"></canvas>
     <div class="lateral hud num"><table id="lateral"></table></div>
     <div class="lectura-grande num">
-      <div class="hud">copia · resultado realizado · usdc</div>
-      <div class="grande" id="combinado">—</div>
-      <div class="hud" id="combinado-sub"></div>
+      <div class="hud">resultado realizado de la copia · usdc</div>
+      <div class="grande" id="total">—</div>
+      <div class="hud" id="total-sub"></div>
     </div>
-    <div class="pie-escena hud">mapa de entradas · eje x: precio de entrada 0 → 1 · fondo → frente: tiempo · altura: importe</div>
+    <div class="pie-escena hud">mapa de copias · eje x: precio de entrada 0 → 1 · fondo → frente: tiempo · altura: importe</div>
   </section>
 
+  <section class="traders" id="traders" aria-label="Traders que seguimos"></section>
+
   <section class="rejilla">
-    <div class="bloque s4">
-      <h2 class="hud">agentes · realizado (no realizado aparte)</h2>
-      <div id="agentes"></div>
-    </div>
-    <div class="bloque s8">
-      <h2 class="hud">resultado realizado acumulado · usdc simulados</h2>
-      <canvas class="grafica" id="curva" role="img" aria-label="Evolución del resultado de cada estrategia" style="height:250px"></canvas>
+    <div class="bloque s12">
+      <h2 class="hud">resultado realizado de la copia, por trader · usdc simulados</h2>
+      <canvas class="grafica" id="curva" role="img" aria-label="Evolución del resultado realizado de la copia de cada trader" style="height:250px"></canvas>
       <div class="hud" id="leyenda" style="margin-top:6px"></div>
     </div>
   </section>
 
   <section class="rejilla">
     <div class="bloque s6">
-      <h2 class="hud">resultado por operación · realizado + latente · distribución</h2>
-      <canvas class="grafica" id="histo-pnl" role="img" aria-label="Distribución del resultado de cada operación"></canvas>
+      <h2 class="hud">resultado por copia · realizado + latente · distribución</h2>
+      <canvas class="grafica" id="histo-pnl" role="img" aria-label="Distribución del resultado de cada copia"></canvas>
     </div>
     <div class="bloque s6">
-      <h2 class="hud">precio de entrada · distribución</h2>
-      <canvas class="grafica" id="histo-precio" role="img" aria-label="Distribución del precio al que se entra"></canvas>
+      <h2 class="hud">precio de entrada de las copias · distribución</h2>
+      <canvas class="grafica" id="histo-precio" role="img" aria-label="Distribución del precio al que se copia"></canvas>
     </div>
   </section>
 
   <section class="rejilla">
     <div class="bloque s12">
-      <h2 class="hud">registro de señales · últimas</h2>
+      <h2 class="hud">registro de copias · últimas</h2>
       <table class="ops num">
-        <thead><tr><th>t</th><th>mercado / apuesta</th><th class="oculto-movil">entrada</th><th id="cab-agentes">copia</th></tr></thead>
+        <thead><tr><th>t</th><th>trader</th><th>mercado / apuesta</th><th class="oculto-movil">entrada</th><th class="d oculto-movil">importe</th><th>estado</th><th class="d">resultado</th></tr></thead>
         <tbody id="operaciones"></tbody>
       </table>
     </div>
   </section>
 
   <section class="rejilla">
-    <div class="bloque s7">
-      <h2 class="hud">monederos copiados · criterios de selección · resultado de la copia</h2>
-      <table class="ops num" id="copiados"></table>
-    </div>
-    <div class="bloque s5 como">
+    <div class="bloque s12 como">
       <h2 class="hud">método</h2>
-      <p><b>01</b>Del ranking de Polymarket se eligen tres traders que cumplen tres criterios: Sharpe del PnL realizado de 30 días por encima de 1, más de un año operando de forma constante en muchos mercados, y disciplina de salida (venden con regularidad).</p>
-      <p><b>02</b>Cuando uno compra, el bot compra lo mismo en papel, a su escala (una fracción fija de su tamaño). Cuando vende, el bot vende la misma fracción. Si no vende, se espera a que el mercado resuelva.</p>
-      <p><b>03</b>DEF_TP y DEF_HOLD usan las mismas entradas con salidas propias, solo para comparar. La cifra principal es el resultado realizado; lo latente se muestra aparte.</p>
+      <p><b>01</b>Selección: del ranking de Polymarket pasan los traders con Sharpe del PnL realizado de 30 días por encima de 1, más de un año operando de forma constante en muchos mercados, disciplina de salida (venden con regularidad) y una posición típica que podamos copiar a escala (proporción hasta 1:150). Se siguen los tres con mejor Sharpe.</p>
+      <p><b>02</b>Detección: el bot lee cada bloque de Polygon y ve la operación del trader cuando se confirma, unos 3 s después (la API de Polymarket tarda unos 10 s y queda de respaldo).</p>
+      <p><b>03</b>Copia: cuando compra, se compra lo mismo a su escala; cuando vende, se vende la misma fracción. Si no vende, se espera a que el mercado resuelva. La cifra principal es el resultado realizado; lo latente se muestra aparte.</p>
+      <p class="hud" id="fuente"></p>
     </div>
   </section>
 
@@ -270,7 +279,7 @@ function pintarMontana() {
   }
   x.globalCompositeOperation = "source-over";
   for (const p of [0, 0.25, 0.5, 0.75, 1]) rotulo(x, p.toFixed(2), W * 0.03 + W * 0.94 * p, H - 30, p === 0 ? "left" : p === 1 ? "right" : "center");
-  if (!modelo.n) rotulo(x, "esperando la primera señal", W / 2, H * 0.5, "center", TINTA);
+  if (!modelo.n) rotulo(x, "esperando la primera compra de los traders", W / 2, H * 0.5, "center", TINTA);
 }
 function animar() { fase += 0.05; pintarMontana(); if (!QUIETO) setTimeout(() => requestAnimationFrame(animar), 140); }
 
@@ -308,7 +317,7 @@ function pintarCurva(hist, ids) {
       }
     }
     const ult = hist.at(-1)[id] ?? 0;
-    rotulo(x, `${corto(id)} ${usd(ult)}`, W - m.d - 2, Y(ult) - 6 - j * 12, "right", TINTA);
+    rotulo(x, `${id} ${usd(ult)}`, W - m.d - 2, Y(ult) - 6 - j * 12, "right", TINTA);
   });
 }
 
@@ -341,79 +350,88 @@ function histograma(id, valores, { min, max, bins, etiqueta }) {
 }
 
 // ── texto ─────────────────────────────────────────────────────────────────
-const CORTO = { DEF_COPY: "copia", DEF_TP: "tp/sl", DEF_HOLD: "hold" };
-const corto = id => CORTO[id] || id.toLowerCase();
 const fecha = iso => iso ? new Date(iso).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) + " UTC" : "—";
 const cifra = (n, cls = "") => `<span class="${n < 0 ? "baja" : cls}">${usd(n)}</span>`;
+const miles = n => n == null ? "—" : (n >= 1e6 ? fmt(n / 1e6, 2) + " M" : n >= 1e3 ? fmt(n / 1e3, 0) + " mil" : fmt(n, 0));
+const ETQ = { buy: "compra", sell: "venta", merge: "merge", redeem: "cobro" };
 
-function pintarTexto(p) {
-  const principal = p.agentes.find(a => a.principal) || p.agentes[0];
-  const ops = p.agentes.reduce((s, a) => s + a.operaciones, 0), abiertas = p.agentes.reduce((s, a) => s + a.abiertas, 0);
-  const el = document.getElementById("combinado");
-  el.textContent = principal ? usd(principal.realizado) : "—"; el.classList.toggle("baja", principal && principal.realizado < 0);
-  document.getElementById("combinado-sub").innerHTML = principal
-    ? `no realizado ${usd(principal.no_realizado)} · comisiones ${fmt(principal.comisiones)} · ${principal.cerradas} cerradas / ${principal.abiertas} abiertas` : "";
-  document.getElementById("totales").innerHTML = `operaciones <b>${ops}</b><br>abiertas <b>${abiertas}</b><br>monederos <b>${(p.copiados || []).length}</b>`;
-  document.getElementById("sondeo").textContent = `2 s · ${(p.copiados || []).length} monederos`;
-  const v = p.ventana || {};
-  document.getElementById("ventana").textContent = v.inicio ? `${fecha(v.inicio)} → ahora` : "—";
-  document.getElementById("lateral").innerHTML = p.agentes.map(a => `<tr><td>${esc(a.id)}</td><td>${cifra(a.realizado, "blanco")}</td></tr>
-    <tr><td>&nbsp;&nbsp;no realizado</td><td>${usd(a.no_realizado)}</td></tr>
-    <tr><td>&nbsp;&nbsp;ops / abiertas</td><td>${a.operaciones} / ${a.abiertas}</td></tr>`).join("");
-  document.getElementById("agentes").innerHTML = p.agentes.map(a => `<div class="agente num">
-      <div class="grande ${a.realizado < 0 ? "baja" : ""}">${usd(a.realizado)}</div>
-      <div><b>${esc(a.id)}</b> <span class="hud">${a.principal ? "principal" : "base de comparación"}</span></div>
-      <div class="hud">${esc(a.descripcion)}</div>
-      <div class="datos hud"><span>latente <b>${usd(a.no_realizado)}</b></span><span>ops <b>${a.operaciones}</b></span><span>acierto <b>${pct(a.acierto)}</b></span></div>
-    </div>`).join("");
-  document.getElementById("leyenda").innerHTML = p.agentes.map(a => `${esc(a.id)}`).join("&nbsp;&nbsp;&nbsp;")
-    + `&nbsp;&nbsp;&nbsp;<span class='baja'>rojo: por debajo de cero</span><br>fuente: ${esc(p.fuente || "")}`;
-
-  const ids = p.agentes.map(a => a.id);
-  document.getElementById("cab-agentes").textContent = ids.map(corto).join(" · ");
-  const caja = document.getElementById("operaciones");
-  if (!p.recientes.length) caja.innerHTML = `<tr><td colspan="4" class="vacio">esperando la primera compra de los traders copiados</td></tr>`;
-  else {
-    const grupos = new Map();
-    for (const o of p.recientes) {
-      const k = [o.mercado, o.apuesta, o.precio_entrada, o.monedero].join("|");
-      if (!grupos.has(k)) grupos.set(k, { ...o, por: {} });
-      grupos.get(k).por[o.agente] = o;
-    }
-    caja.innerHTML = [...grupos.values()].slice(0, 16).map(g => `<tr>
-      <td class="hud">${hace(g.entrada)}</td>
-      <td class="mercado">${esc(g.mercado)}<br><span class="hud">${esc(g.apuesta)} · copia ${esc(g.monedero)}${g.por.DEF_COPY && g.por.DEF_COPY.salida ? " · el trader vendió" : ""}</span></td>
-      <td class="d oculto-movil">${Number(g.precio_entrada).toFixed(2)}</td>
-      <td class="d">${ids.map(id => {
-        const o = g.por[id];
-        if (!o) return `<span class="hud">—</span>`;
-        const estado = esc(ESTADOS[o.estado] || o.estado);
-        return o.estado === "open"
-          ? `<span class="hud" title="${estado} · latente">${usd(o.no_realizado + o.realizado)}</span>`
-          : `<span class="${o.realizado < 0 ? "baja" : ""}" title="${estado}">${usd(o.realizado)}</span>`;
-      }).join(" · ")}</td></tr>`).join("");
-  }
-  const cp = p.copiados || [];
-  document.getElementById("copiados").innerHTML = `<thead><tr><th>trader</th><th class="oculto-movil">escala</th><th class="oculto-movil">sharpe 30d</th>
-      <th class="oculto-movil">meses / 12</th><th>ops · abiertas</th><th class="d">realizado</th><th class="d oculto-movil">latente</th></tr></thead><tbody>`
-    + cp.map(m => `<tr><td><a href="${esc(m.perfil)}" style="color:inherit">${esc(m.nombre)}</a><br><span class="hud">${esc(m.monedero)}</span></td>
-      <td class="oculto-movil">×${fmt(m.escala * 100, 2)}%</td>
-      <td class="oculto-movil">${m.sharpe_30d != null ? fmt(m.sharpe_30d, 2) : "—"}</td>
-      <td class="oculto-movil">${m.meses_activos_12 ?? "—"}</td>
-      <td>${m.operaciones} · ${m.abiertas}</td>
-      <td class="d">${cifra(m.realizado)}</td><td class="d oculto-movil">${usd(m.no_realizado)}</td></tr>`).join("") + "</tbody>";
+function fichaTrader(tr) {
+  const c = tr.copia, k = tr.criterios || {};
+  const movs = (tr.movimientos || []).map(m => `<li>
+      <span class="hud">${hace(m.t)}</span>
+      <span class="etq ${esc(m.tipo)}">${esc(ETQ[m.tipo] || m.tipo)}</span>
+      <span class="m" title="${esc(m.mercado)}">${esc(m.mercado)}${m.resultado ? ` <span class="hud">· ${esc(m.resultado)}</span>` : ""}</span>
+      <span class="num">${fmt(m.usdc, 0)}${m.precio != null && m.tipo !== "redeem" ? ` <span class="hud">@${Number(m.precio).toFixed(2)}</span>` : ""}</span>
+    </li>`).join("") || `<li><span class="hud" style="grid-column:1/-1">sin movimientos recientes</span></li>`;
+  return `<article class="trader num">
+    <h3><a href="${esc(tr.perfil)}" rel="noopener">${esc(tr.nombre)}</a></h3>
+    <div class="hud">${esc(tr.monedero)} · copiamos al ${fmt(tr.escala * 100, 2)}% de su tamaño</div>
+    <div class="hud" style="margin-top:12px">nuestra copia · realizado</div>
+    <div class="grande ${c.realizado < 0 ? "baja" : ""}">${usd(c.realizado)}</div>
+    <div class="pares">
+      <span>latente</span><span>${cifra(c.no_realizado)}</span>
+      <span>copias · abiertas</span><span>${c.operaciones} · ${c.abiertas}</span>
+      <span>en juego</span><span>${fmt(c.en_juego)}</span>
+      <span>acierto</span><span>${pct(c.acierto)}</span>
+      <span>comisiones</span><span>${fmt(c.comisiones)}</span>
+    </div>
+    <h4>por qué lo seguimos</h4>
+    <div class="pares">
+      <span>sharpe 30 d</span><span>${k.sharpe_30d != null ? fmt(k.sharpe_30d, 2) : "—"}</span>
+      <span>pnl realizado 30 d</span><span>${k.pnl_30d != null ? (k.pnl_30d < 0 ? "−" : "+") + miles(Math.abs(k.pnl_30d)) + " $" : "—"}</span>
+      <span>meses activos (12)</span><span>${k.meses_activos_12 ?? "—"}</span>
+      <span>mercados 30 d</span><span>${k.mercados_30d ?? "—"}</span>
+      <span>ventas · compras 30 d</span><span>${k.ventas_30d ?? "—"}${k.merges_30d ? ` (+${k.merges_30d} m)` : ""} · ${k.compras_30d ?? "—"}</span>
+      <span>proporción</span><span>${k.proporcion != null ? "1:" + Math.round(k.proporcion) : "—"}</span>
+    </div>
+    <h4>últimos movimientos del trader</h4>
+    <ul class="movs">${movs}</ul>
+  </article>`;
 }
 
-// Operaciones para las gráficas: todas si el JSON trae «puntos», si no, las recientes.
+function pintarTexto(p) {
+  const t = p.total, trs = p.traders || [];
+  const el = document.getElementById("total");
+  el.textContent = usd(t.realizado); el.classList.toggle("baja", t.realizado < 0);
+  document.getElementById("total-sub").textContent =
+    `latente ${usd(t.no_realizado)} · comisiones ${fmt(t.comisiones)} · ${t.cerradas} cerradas / ${t.abiertas} abiertas`;
+  document.getElementById("totales").innerHTML = `traders <b>${trs.length}</b><br>copias <b>${t.operaciones}</b><br>abiertas <b>${t.abiertas}</b>`;
+  const v = p.ventana || {};
+  document.getElementById("ventana").textContent = v.inicio ? `${fecha(v.inicio)} → ahora` : "desde el arranque";
+  document.getElementById("lateral").innerHTML = trs.map(tr => `<tr><td>${esc(tr.nombre)}</td><td>${cifra(tr.copia.realizado, "blanco")}</td></tr>
+    <tr><td>&nbsp;&nbsp;latente</td><td>${usd(tr.copia.no_realizado)}</td></tr>
+    <tr><td>&nbsp;&nbsp;copias / abiertas</td><td>${tr.copia.operaciones} / ${tr.copia.abiertas}</td></tr>`).join("");
+  document.getElementById("traders").innerHTML = trs.map(fichaTrader).join("");
+  document.getElementById("leyenda").innerHTML = trs.map(tr => esc(tr.nombre)).join("&nbsp;&nbsp;&nbsp;")
+    + "&nbsp;&nbsp;&nbsp;<span class='baja'>rojo: por debajo de cero</span>";
+  document.getElementById("fuente").textContent = "fuente: " + (p.fuente || "");
+
+  const caja = document.getElementById("operaciones");
+  caja.innerHTML = p.recientes.length ? p.recientes.slice(0, 20).map(o => {
+    const abierta = o.estado === "open";
+    const res = abierta ? `<span class="hud" title="latente">${usd(o.no_realizado + o.realizado)}</span>` : cifra(o.realizado);
+    const estado = abierta ? (o.realizado ? "abierta · vendió parte" : "abierta")
+      : o.motivo_salida === "trader_sold" ? "el trader vendió" : o.motivo_salida === "market_resolved" ? "mercado resuelto" : "cerrada";
+    return `<tr>
+      <td class="hud">${hace(o.salida || o.entrada)}</td>
+      <td>${esc(o.trader)}</td>
+      <td class="mercado">${esc(o.mercado)}<br><span class="hud">${esc(o.apuesta)}</span></td>
+      <td class="oculto-movil">${Number(o.precio_entrada).toFixed(2)}</td>
+      <td class="d oculto-movil">${fmt(o.importe)}</td>
+      <td class="hud">${estado}</td>
+      <td class="d">${res}</td></tr>`;
+  }).join("") : `<tr><td colspan="7" class="vacio">esperando la primera compra de los traders</td></tr>`;
+}
+
+// Copias para las gráficas: [precio, importe, entrada, resultado, trader].
 function puntos(p) {
-  return p.puntos ? p.puntos.map(([precio_entrada, importe, entrada, pnl, agente]) => ({ precio_entrada, importe, entrada, pnl, agente }))
-                  : p.recientes;
+  return (p.puntos || []).map(([precio_entrada, importe, entrada, pnl, trader]) => ({ precio_entrada, importe, entrada, pnl, trader }));
 }
 
 let ultimo = null;
 function pintarGraficas() {
   if (!ultimo) return;
-  const { p, h } = ultimo, ids = p.agentes.map(a => a.id);
+  const { p, h } = ultimo, ids = (p.traders || []).map(tr => tr.nombre);
   pintarMontana();
   pintarCurva(h, ids);
   const todas = puntos(p), pnls = todas.map(o => Number(o.pnl) || 0);
@@ -429,6 +447,7 @@ async function cargar() {
       fetch(DATOS + "progreso.json" + sinCache).then(r => r.json()),
       fetch(DATOS + "historial.json" + sinCache).then(r => r.json()).catch(() => []),
     ]);
+    if (!p.traders) throw new Error("formato antiguo");
     const viejo = Date.now() - new Date(p.actualizado).getTime() > 20 * 60 * 1000;
     document.getElementById("vivo").classList.toggle("parado", viejo);
     document.getElementById("estado").textContent = viejo ? "en pausa" : "en directo";
@@ -440,7 +459,7 @@ async function cargar() {
     pintarTexto(p);
     pintarGraficas();
   } catch (e) {
-    document.getElementById("estado").textContent = "sin datos";
+    document.getElementById("estado").textContent = "actualizando datos";
   }
 }
 cargar().then(() => { if (!QUIETO) animar(); });
