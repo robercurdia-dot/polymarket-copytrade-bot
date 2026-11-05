@@ -33,6 +33,26 @@ Only one agent decides real trades today: **`DEF_COPY`**, the mirror-copy agent.
 
 The shift was deliberate: whenever `DEF_TP` outperformed on a single window it was because of noise; on long enough windows the trader's own exit beat our rules. The whole point of a whitelist is that the picked wallets are better than us at *when* to exit, not just *where* to enter. So we stopped trying.
 
+## Detection latency: chain first, Data API as fallback
+
+Polymarket's Data API shows a trade 3–10 s after it happens (median ~7 s, measured 2026-11-05). `cadena.py` reads
+each new Polygon block (one every ~2 s) from a public RPC and filters the exchange's fill events by the copied
+wallets, so the bot sees the whale's trade when it is confirmed. In a 3-minute race on the 10 most active wallets
+(505 trades) the chain saw trades at a median of **3.4 s** vs **10.2 s** for the Data API — 6.5 s earlier on median,
+up to 16 s. The Data API polling keeps running as fallback; both paths share the `tx|token` de-duplication, so a
+trade is processed once whichever arrives first. Exits seen on chain are applied by `definitive_copy_watcher.py`
+without waiting for the API.
+
+Every executed order emits a fill event with its creator as `maker`, so filtering by maker covers maker and taker
+orders without double counting. The decoding was checked against the Data API on 50 trades (50/50 match).
+
+```
+POLYGON_RPC_URL=https://polygon-bor-rpc.publicnode.com   # any Polygon RPC; public ones need no key
+POLY_EXCHANGES=0xe111180000d2663c0091e4f400237545b87b996b,0xe2222d279d744050d28e00520010520000310f59
+CADENA_ENABLED=true
+DEF_COPY_INTERVAL=1                                       # exit watcher cadence (s)
+```
+
 ## Architecture
 
 ```

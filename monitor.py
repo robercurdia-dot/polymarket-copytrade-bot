@@ -732,6 +732,53 @@ async def whitelist_fast_loop():
         await asyncio.sleep(interval)
 
 
+async def cadena_loop():
+    """Lee cada bloque nuevo de Polygon y procesa al momento las operaciones de la whitelist (cadena.py).
+    Ve la operación cuando se confirma (~2 s) en lugar de cuando la publica la Data API (3-10 s).
+    Las compras y ventas pasan por process_new_trade, que deduplica por tx|token igual que el sondeo de la
+    API: cada operación se procesa una sola vez, llegue antes por donde llegue. Las ventas se guardan además
+    para que definitive_copy_watcher cierre la copia sin esperar a la API. CADENA_ENABLED=false lo apaga."""
+    import os as _os
+    import time as _time
+    import cadena
+    if (_os.getenv("CADENA_ENABLED", "true") or "true").lower() != "true":
+        print("[CADENA] desactivado (CADENA_ENABLED=false)")
+        return
+    addrs = set()
+    for env in ("REAL_WALLET_WHITELIST", "REAL_D_WALLET_WHITELIST"):
+        addrs |= {a.strip().lower() for a in (_os.getenv(env, "") or "").split(",") if a.strip()}
+    if not addrs:
+        print("[CADENA] sin whitelist, loop no necesario")
+        return
+    print(f"[CADENA] Leyendo bloques de Polygon para {len(addrs)} wallets · RPC {cadena.RPC}")
+    loop = asyncio.get_event_loop()
+    ultimo, fallos = None, 0
+    while True:
+        try:
+            cabeza = await loop.run_in_executor(None, cadena.bloque_actual)
+            if ultimo is None:
+                ultimo = cabeza - 1
+            while ultimo < cabeza:
+                hasta = min(cabeza, ultimo + cadena.MAX_BLOQUES)
+                ops = await loop.run_in_executor(None, cadena.leer, ultimo + 1, hasta, addrs)
+                ultimo = hasta
+                for op in ops:
+                    wallet = op["proxyWallet"]
+                    print(f"[CADENA] {wallet[:10]} {op['side']} {op['usdcSize']:.0f} USDC @ {op['price']:.3f} · "
+                          f"{(op.get('title') or '')[:40]} · retraso {_time.time() - op['timestamp']:.1f}s")
+                    if op["side"] == "SELL":
+                        cadena.guardar_venta(op)
+                    insider_stats = {"insider_score": 1.0, "win_rate": 0.0, "total_trades": 0,
+                                     "profit_factor": 0.0, "name": database.get_wallet_username(wallet) or ""}
+                    await process_new_trade(wallet, op, insider_stats)
+            fallos = 0
+        except Exception as e:
+            fallos += 1
+            if fallos in (1, 10) or fallos % 120 == 0:
+                print(f"[CADENA] error ({fallos} seguidos, la Data API sigue de respaldo): {e}")
+        await asyncio.sleep(1)
+
+
 async def monitor_loop():
     # Purgar entradas de research caducadas al arrancar
     database.purge_expired_research_cache()

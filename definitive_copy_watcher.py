@@ -89,6 +89,11 @@ def _fetch_exits(addr: str, cutoff_ts: int) -> dict:
                     sells.append(a)
                 elif atype == 'MERGE':
                     merges.append(a)
+            # Ventas ya vistas en la cadena (cadena.py): llegan segundos antes que a la Data API.
+            # Misma clave (tx|token|fecha del bloque), así que _evento no las aplica dos veces.
+            import cadena
+            vistas = {_evento(x) for x in sells}
+            sells += [v for v in cadena.ventas_desde(addr, cutoff_ts) if _evento(v) not in vistas]
             return {'sells': sells, 'merges': merges}
         except Exception as e:
             last_err = e

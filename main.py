@@ -433,7 +433,8 @@ async def definitive_copy_loop():
     L87 (2026-06-06) — intervalo 3s para gap señal→cierre <3s."""
     import os as _os
     interval = float(_os.getenv('DEF_COPY_INTERVAL', '3'))
-    print(f"[DEF_COPY] Loop iniciado (cada {interval}s · Lily + Swisstony)")
+    import copy_wallets
+    print(f"[DEF_COPY] Loop iniciado (cada {interval}s · {', '.join(w['name'] for w in copy_wallets.para_def_copy().values())})")
     import definitive_copy_watcher
     while True:
         try:
@@ -848,6 +849,7 @@ async def startup():
                 diagnostics_loop(),
                 definitive_copy_loop(),
                 monitor.whitelist_fast_loop(),
+                monitor.cadena_loop(),
                 daily_session_loop(),
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
