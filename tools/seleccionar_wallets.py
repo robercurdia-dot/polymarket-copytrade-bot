@@ -3,7 +3,7 @@
     python tools/seleccionar_wallets.py [--n 3] [--candidatos 250] [--escribir-env]
 
 Candidatos: el leaderboard de Polymarket (Data API v2), mensual y de siempre, ordenado por PnL.
-Un monedero pasa si cumple los tres criterios:
+Un monedero pasa si cumple los cuatro criterios:
 
   1. Sharpe del periodo > 1 sobre el PnL realizado de los últimos 30 días:
      PnL realizado de cada día (posiciones cerradas por último movimiento, días sin cierres = 0),
@@ -12,14 +12,17 @@ Un monedero pasa si cumple los tres criterios:
      actividad hace más de 365 días, actividad en ≥ --min-meses de los últimos 12 meses,
      ≥ --min-mercados mercados distintos en 30 días y ningún mercado con más del --max-cuota del volumen.
   3. Disciplina de salida: en 30 días, ventas + merges ≥ --min-salidas y ≥ --min-ratio-salida de las compras.
+  4. Proporción de tamaño (LESSONS §5 y §11): posición mediana por mercado / DEFINITIVE_MAX_PER_TRADE
+     ≤ --max-proporcion. Si sube el tope (porque sube el capital), se reabren monederos automáticamente.
 
 Los que pasan se ordenan por Sharpe y se quedan los --n primeros. La escala de cada uno se fija para que su
-compra mediana se copie por --objetivo-usdc (README: tamaño = lo que compra el trader × ESCALA).
+posición mediana por mercado se copie por --objetivo-usdc (README: tamaño = lo que compra el trader × ESCALA).
 Con --escribir-env guarda COPY_WALLETS y las whitelists en el .env del repo (está en .gitignore).
 """
 import argparse
 import json
 import math
+import os
 import re
 import statistics
 import sys
@@ -142,6 +145,10 @@ def evaluar(addr: str, nombre: str, a, ahora: int) -> dict:
     if salidas < a.min_salidas or salidas < a.min_ratio_salida * max(1, fila["compras_30d"]):
         fila["motivo"] = "pocas salidas"
         return fila
+    fila["proporcion"] = round(fila["posicion_mediana"] / a.max_por_operacion, 1) if a.max_por_operacion else None
+    if fila["proporcion"] is None or fila["proporcion"] > a.max_proporcion:
+        fila["motivo"] = "proporción"
+        return fila
     fila["pasa"] = True
     return fila
 
@@ -169,6 +176,10 @@ def main() -> None:
     p.add_argument("--min-salidas", type=int, default=10)
     p.add_argument("--min-ratio-salida", type=float, default=0.10)
     p.add_argument("--objetivo-usdc", type=float, default=10.0)
+    p.add_argument("--max-proporcion", type=float, default=150.0)
+    p.add_argument("--max-por-operacion", type=float,
+                   default=float(os.getenv("DEFINITIVE_MAX_PER_TRADE", "20") or 20),
+                   help="tope por operación en USDC (DEFINITIVE_MAX_PER_TRADE)")
     p.add_argument("--escribir-env", action="store_true")
     p.add_argument("--salida", default=str(RAIZ / "sim" / "seleccion.json"))
     a = p.parse_args()
@@ -188,11 +199,11 @@ def main() -> None:
     for f in elegidos:
         f["escala"] = round(a.objetivo_usdc / f["posicion_mediana"], 6) if f["posicion_mediana"] else 0.01
 
-    print(f"Pasan los tres criterios: {len(pasan)} · descartes: {dict(descartes)}")
+    print(f"Pasan los cuatro criterios: {len(pasan)} · descartes: {dict(descartes)}")
     for f in elegidos:
         print(f"  {f['monedero']}  {f['nombre'][:20]:20}  sharpe {f['sharpe']:5.2f}  pnl30d {f['pnl_30d']:>11,.0f}  "
               f"meses {f['meses_activos_12']}/12  mercados {f['mercados_30d']}  "
-              f"salidas {f['ventas_30d']}+{f['merges_30d']}m/{f['compras_30d']}c  escala {f['escala']}")
+              f"salidas {f['ventas_30d']}+{f['merges_30d']}m/{f['compras_30d']}c  1:{f['proporcion']:.0f}  escala {f['escala']}")
 
     Path(a.salida).parent.mkdir(parents=True, exist_ok=True)
     Path(a.salida).write_text(json.dumps({"fecha": ahora, "criterios": vars(a), "elegidos": elegidos,
