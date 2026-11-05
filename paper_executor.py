@@ -39,6 +39,34 @@ _PAPER_DEF_OPEN_LOCK = threading.Lock()
 # token_id guardado para TOKEN LOCK: bloquea el lado contrario del mismo mercado.
 _PAPER_COPY_LAST_AGG: dict = {}
 
+
+# Cobertura de la copia por posición del trader: cuánto de su acumulado ya hemos copiado. Cada refuerzo copia
+# solo lo que el trader añade desde la última copia (README: «we accumulate at the same pace»). Antes cada
+# REINFORCE abría una copia por TODO el acumulado del trader, así que una posición construida en N órdenes se
+# copiaba N veces (medido 2026-11-05: 26,4 USDC copiados para 8,0 USDC a escala). Se guarda en BD para que un
+# reinicio no vuelva a copiar lo ya cubierto.
+def _cobertura(agente: str, monedero: str, mercado: str, token: str) -> float:
+    conn = database.get_connection()
+    try:
+        conn.execute("""CREATE TABLE IF NOT EXISTS copy_cobertura (
+            agente TEXT, monedero TEXT, mercado TEXT, token TEXT, agg_cubierto REAL, actualizado TEXT,
+            PRIMARY KEY (agente, monedero, mercado, token))""")
+        fila = conn.execute("SELECT agg_cubierto FROM copy_cobertura WHERE agente=? AND monedero=? AND mercado=? AND token=?",
+                            (agente, monedero, mercado, token)).fetchone()
+        return float(fila[0]) if fila else 0.0
+    finally:
+        conn.close()
+
+
+def _guardar_cobertura(agente: str, monedero: str, mercado: str, token: str, agg: float) -> None:
+    conn = database.get_connection()
+    try:
+        conn.execute("INSERT OR REPLACE INTO copy_cobertura VALUES (?,?,?,?,?,?)",
+                     (agente, monedero, mercado, token, agg, datetime.utcnow().isoformat()))
+        conn.commit()
+    finally:
+        conn.close()
+
 _CLOB_API = "https://clob.polymarket.com"
 _TIMEOUT = 10
 
@@ -540,6 +568,7 @@ def _open_paper_trade(signal: dict, entry_price: float, token_id: str,
     """
     _paper_agg_key = None   # se rellena en bloque DEF_COPY si delta-check OK
     _paper_agg_val = None
+    _paper_cob = None       # (agente, monedero, mercado, token, agg) a marcar como cubierto si la copia abre
 
     # L61 (2026-06-03) — size per-agent.
     import os as _os
@@ -707,9 +736,20 @@ def _open_paper_trade(signal: dict, entry_price: float, token_id: str,
             if _ep < 0.05 or _ep > 0.95:
                 print(f"[PAPER:{agent['id']}] RESOLVED-SKIP p={_ep:.4f} · {mid[:14]}… [{niche}]")
                 return None
-            sc = min(agg * cfg['scale'], MAX_T)
+            # Solo lo que el trader ha añadido desde la última copia (ver _cobertura). El acumulado del monitor
+            # se reinicia tras su ventana de 30 min: si baja de lo cubierto, todo él es nuevo.
+            _tok = token_id or _incoming_token
+            _cubierto = _cobertura(agent['id'], wallet, mid, _tok)
+            _nuevo = agg - _cubierto if agg >= _cubierto else agg
+            sc = min(_nuevo * cfg['scale'], MAX_T)
+            # Un refuerzo por debajo del mínimo del CLOB (5,5 participaciones) espera a acumular más en vez de
+            # subirse al mínimo: subirlo es copiar por encima de la escala. La primera entrada sí se sube.
+            _ep_min = float((signal or {}).get('insider_price') or 0) or _ep
+            if _cubierto > 0 and sc < max(MIN_T, 5.5 * _ep_min):
+                return None
             sc = max(sc, MIN_T)
             size_usdc = round(sc, 2)
+            _paper_cob = (agent['id'], wallet, mid, _tok, agg)
             # L89 (2026-06-07) — Test paper · min 5.5 shares para simular el
             # mínimo de Polymarket (Size >= 5). Si el size en USDC no llega
             # a 5.5 shares, lo subimos hasta 5.5 shares (con tope MAX_T).
@@ -720,17 +760,17 @@ def _open_paper_trade(signal: dict, entry_price: float, token_id: str,
                     if size_usdc < min_usdc_5sh:
                         bumped_from = size_usdc
                         size_usdc = min(min_usdc_5sh, MAX_T)
-                        print(f"[PAPER:{agent['id']}] {cfg['name']} {label} agg ${agg:.0f}"
+                        print(f"[PAPER:{agent['id']}] {cfg['name']} {label} nuevo ${_nuevo:.0f} (acum ${agg:.0f})"
                               f"×{cfg['scale']}=${bumped_from} · BUMP→${size_usdc} "
                               f"(min 5.5sh @ {_ep:.3f}) · {mid[:14]}… [{niche}]")
                     else:
-                        print(f"[PAPER:{agent['id']}] {cfg['name']} {label} agg ${agg:.0f}"
+                        print(f"[PAPER:{agent['id']}] {cfg['name']} {label} nuevo ${_nuevo:.0f} (acum ${agg:.0f})"
                               f"×{cfg['scale']}=${size_usdc} · {mid[:14]}… [{niche}]")
                 else:
-                    print(f"[PAPER:{agent['id']}] {cfg['name']} {label} agg ${agg:.0f}"
+                    print(f"[PAPER:{agent['id']}] {cfg['name']} {label} nuevo ${_nuevo:.0f} (acum ${agg:.0f})"
                           f"×{cfg['scale']}=${size_usdc} · {mid[:14]}… [{niche}]")
             except Exception:
-                print(f"[PAPER:{agent['id']}] {cfg['name']} {label} agg ${agg:.0f}"
+                print(f"[PAPER:{agent['id']}] {cfg['name']} {label} nuevo ${_nuevo:.0f} (acum ${agg:.0f})"
                       f"×{cfg['scale']}=${size_usdc} · {mid[:14]}… [{niche}]")
         except Exception as _e:
             print(f"[PAPER:{agent['id']}] err: {_e}")
@@ -787,6 +827,8 @@ def _open_paper_trade(signal: dict, entry_price: float, token_id: str,
     # Actualizar delta-check (mirror _COPY_LAST_AGG de real_signal_router).
     if _paper_agg_key is not None and _paper_agg_val is not None:
         _PAPER_COPY_LAST_AGG[_paper_agg_key] = _paper_agg_val
+    if _paper_cob is not None:
+        _guardar_cobertura(*_paper_cob)
 
     return pt_id
 
