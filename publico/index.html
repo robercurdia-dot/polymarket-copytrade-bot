@@ -87,6 +87,9 @@ footer a { color: var(--gris); }
 .pares { display: grid; grid-template-columns: max-content 1fr; gap: 1px 14px; margin-top: 10px; }
 .pares span:nth-child(odd) { color: var(--gris); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; padding-top: 1px; }
 .pares span:nth-child(even) { text-align: right; }
+.operado { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; border: 1px solid var(--linea); padding: 10px 12px; }
+.operado div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.operado b { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
 .trader h4 { margin: 16px 0 6px; font: inherit; color: var(--gris); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; }
 .movs { list-style: none; margin: 0; padding: 0; }
 .movs li { display: grid; grid-template-columns: 3.4em 3.6em 1fr auto; gap: 8px; padding: 4px 0; border-bottom: 1px dashed var(--rejilla); }
@@ -356,7 +359,7 @@ const miles = n => n == null ? "—" : (n >= 1e6 ? fmt(n / 1e6, 2) + " M" : n >=
 const ETQ = { buy: "compra", sell: "venta", merge: "merge", redeem: "cobro" };
 
 function fichaTrader(tr) {
-  const c = tr.copia, k = tr.criterios || {};
+  const c = tr.copia, k = tr.criterios || {}, op = tr.trader_opera || {};
   const movs = (tr.movimientos || []).map(m => `<li>
       <span class="hud">${hace(m.t)}</span>
       <span class="etq ${esc(m.tipo)}">${esc(ETQ[m.tipo] || m.tipo)}</span>
@@ -366,12 +369,16 @@ function fichaTrader(tr) {
   return `<article class="trader num">
     <h3><a href="${esc(tr.perfil)}" rel="noopener">${esc(tr.nombre)}</a></h3>
     <div class="hud">${esc(tr.monedero)} · copiamos al ${fmt(tr.escala * 100, 2)}% de su tamaño</div>
+    <h4>dinero operado desde ${tr.seguimos_desde ? fecha(tr.seguimos_desde) : "que lo seguimos"}</h4>
+    <div class="operado">
+      <div><span class="hud">el trader</span><b>${fmt(op.compras_usdc || 0, 0)} $</b><span class="hud">comprado · ${fmt(op.ventas_usdc || 0, 0)} $ vendido · ${op.operaciones || 0} ops</span></div>
+      <div><span class="hud">nuestra copia</span><b>${fmt(c.copiado || 0, 2)} $</b><span class="hud">copiado${op.compras_usdc ? ` · ${fmt(100 * (c.copiado || 0) / op.compras_usdc, 2)}% de lo suyo` : ""} · ${fmt(c.en_juego, 2)} $ en juego</span></div>
+    </div>
     <div class="hud" style="margin-top:12px">nuestra copia · realizado</div>
     <div class="grande ${c.realizado < 0 ? "baja" : ""}">${usd(c.realizado)}</div>
     <div class="pares">
       <span>latente</span><span>${cifra(c.no_realizado)}</span>
       <span>copias · abiertas</span><span>${c.operaciones} · ${c.abiertas}</span>
-      <span>en juego</span><span>${fmt(c.en_juego)}</span>
       <span>acierto</span><span>${pct(c.acierto)}</span>
       <span>comisiones</span><span>${fmt(c.comisiones)}</span>
     </div>
@@ -395,7 +402,9 @@ function pintarTexto(p) {
   el.textContent = usd(t.realizado); el.classList.toggle("baja", t.realizado < 0);
   document.getElementById("total-sub").textContent =
     `latente ${usd(t.no_realizado)} · comisiones ${fmt(t.comisiones)} · ${t.cerradas} cerradas / ${t.abiertas} abiertas`;
-  document.getElementById("totales").innerHTML = `traders <b>${trs.length}</b><br>copias <b>${t.operaciones}</b><br>abiertas <b>${t.abiertas}</b>`;
+  const movido = trs.reduce((s, tr) => s + ((tr.trader_opera || {}).compras_usdc || 0), 0);
+  document.getElementById("totales").innerHTML = `traders <b>${trs.length}</b><br>comprado por ellos <b>${fmt(movido, 0)} $</b>`
+    + `<br>copiado <b>${fmt(t.copiado || 0, 2)} $</b><br>en juego <b>${fmt(t.en_juego || 0, 2)} $</b>`;
   const v = p.ventana || {};
   document.getElementById("ventana").textContent = v.inicio ? `${fecha(v.inicio)} → ahora` : "desde el arranque";
   document.getElementById("lateral").innerHTML = trs.map(tr => `<tr><td>${esc(tr.nombre)}</td><td>${cifra(tr.copia.realizado, "blanco")}</td></tr>

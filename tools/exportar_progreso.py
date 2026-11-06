@@ -70,6 +70,9 @@ def _resumen(trades: list[dict]) -> dict:
         "no_realizado": round(sum(_no_realizado(t) for t in abiertas), 2),
         "comisiones": round(sum(float(t.get("fees_estimated") or 0) for t in trades), 2),
         "en_juego": round(sum(float(t.get("entry_size_usdc") or 0) for t in abiertas), 2),
+        # Lo comprado en la copia. Las ventas parciales reducen entry_size_usdc, así que en posiciones vendidas
+        # en parte cuenta lo que queda, no lo comprado: es un mínimo.
+        "copiado": round(sum(float(t.get("entry_size_usdc") or 0) for t in trades), 2),
     }
 
 
@@ -99,12 +102,44 @@ def _movimientos(addr: str) -> list[dict]:
     return out
 
 
+def _volumen_trader(addr: str, desde: int) -> dict:
+    """Dinero que ha movido el trader desde que lo seguimos (Data API v2): compras y ventas en USDC."""
+    out = {"compras_usdc": 0.0, "ventas_usdc": 0.0, "operaciones": 0, "completo": True}
+    if not desde:
+        return out
+    cursor, ahora = None, int(datetime.now(timezone.utc).timestamp())
+    for _ in range(20):
+        params = {"user": addr, "start": desde, "end": ahora, "limit": 500}
+        if cursor:
+            params["cursor"] = cursor
+        try:
+            r = requests.get("https://data-api.polymarket.com/v2/activity", params=params, timeout=15)
+            cuerpo = r.json() if r.status_code == 200 else {}
+        except (requests.RequestException, ValueError):
+            out["completo"] = False
+            break
+        for a in cuerpo.get("data") or []:
+            if a.get("type") != "TRADE":
+                continue
+            out["operaciones"] += 1
+            clave = "compras_usdc" if a.get("side") == "BUY" else "ventas_usdc"
+            out[clave] += float(a.get("usdc_size") or 0)
+        cursor = (cuerpo.get("pagination") or {}).get("next_cursor")
+        if not cursor:
+            break
+    else:
+        out["completo"] = False
+    out["compras_usdc"], out["ventas_usdc"] = round(out["compras_usdc"], 2), round(out["ventas_usdc"], 2)
+    return out
+
+
 def _traders(trades: list[dict]) -> list[dict]:
     import copy_wallets
-    seleccion = {}
+    seleccion, desde = {}, None
     try:
         datos = json.loads((RAIZ / "sim" / "seleccion.json").read_text(encoding="utf-8"))
         seleccion = {f["monedero"]: f for f in datos.get("elegidos", []) + datos.get("pasan", [])}
+        desde = int(datos.get("fecha") or 0) or None   # cuándo se eligieron: desde entonces los seguimos
     except (FileNotFoundError, ValueError):
         pass
     out = []
@@ -120,6 +155,8 @@ def _traders(trades: list[dict]) -> list[dict]:
                           "compras_30d": s.get("compras_30d"), "proporcion": s.get("proporcion"),
                           "posicion_mediana": s.get("posicion_mediana")},
             "copia": _resumen([t for t in trades if (t["wallet_copied"] or "").lower() == addr]),
+            "seguimos_desde": datetime.fromtimestamp(desde, timezone.utc).isoformat(timespec="seconds") if desde else None,
+            "trader_opera": _volumen_trader(addr, desde),
             "movimientos": _movimientos(addr),
         })
     return out
